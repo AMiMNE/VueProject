@@ -1,121 +1,234 @@
 <template>
   <div class="dashboard-content">
-    <h1>欢迎回来，{{ currentUser }}！</h1>
+    <div class="welcome-section">
+      <div class="welcome-text">
+        <h1>欢迎回来，{{ currentUser }}！</h1>
+        <p class="welcome-subtitle">祝您今天工作愉快</p>
+      </div>
+      <div class="welcome-date">
+        <el-icon><Calendar /></el-icon>
+        <span>{{ currentDate }}</span>
+      </div>
+    </div>
+
     <div class="stats-cards">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: #409eff;">
-          <el-icon><User /></el-icon>
+      <div class="stat-card" style="--card-color: #409eff;">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><User /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ users.length }}</div>
+            <div class="stat-label">用户总数</div>
+          </div>
         </div>
-        <div class="stat-info">
-          <div class="stat-number">{{ users.length }}</div>
-          <div class="stat-label">用户总数</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: #67c23a;">
-          <el-icon><Goods /></el-icon>
-        </div>
-        <div class="stat-info">
-          <div class="stat-number">{{ products.length }}</div>
-          <div class="stat-label">产品数量</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: #e6a23c;">
-          <el-icon><Document /></el-icon>
-        </div>
-        <div class="stat-info">
-          <div class="stat-number">{{ orders.length }}</div>
-          <div class="stat-label">订单总数</div>
+        <div class="stat-footer">
+          <span class="stat-trend up">
+            <el-icon><Top /></el-icon>
+            12%
+          </span>
+          <span class="stat-compare">较上月</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: #f56c6c;">
-          <el-icon><Money /></el-icon>
+
+      <div class="stat-card" style="--card-color: #67c23a;">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><Goods /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ products.length }}</div>
+            <div class="stat-label">产品数量</div>
+          </div>
         </div>
-        <div class="stat-info">
-          <div class="stat-number">¥{{ totalRevenue }}</div>
-          <div class="stat-label">今日收入</div>
+        <div class="stat-footer">
+          <span class="stat-trend up">
+            <el-icon><Top /></el-icon>
+            8%
+          </span>
+          <span class="stat-compare">较上月</span>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--card-color: #e6a23c;">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><Document /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ orders.length }}</div>
+            <div class="stat-label">订单总数</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="stat-trend up">
+            <el-icon><Top /></el-icon>
+            23%
+          </span>
+          <span class="stat-compare">较上月</span>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--card-color: #f56c6c;">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><Money /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">¥{{ totalRevenue }}</div>
+            <div class="stat-label">今日收入</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="stat-trend up">
+            <el-icon><Top /></el-icon>
+            15%
+          </span>
+          <span class="stat-compare">较昨日</span>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--card-color: #9b59b6;">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><Bell /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ unreadMessages.length }}</div>
+            <div class="stat-label">未读消息</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="stat-trend down">
+            <el-icon><Bottom /></el-icon>
+            5%
+          </span>
+          <span class="stat-compare">较昨日</span>
+        </div>
+      </div>
+
+      <div class="stat-card" style="--card-color: #3498db;">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><Clock /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ pendingOrders.length }}</div>
+            <div class="stat-label">待办事件</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="stat-trend">
+            <el-icon><Minus /></el-icon>
+            0%
+          </span>
+          <span class="stat-compare">较昨日</span>
         </div>
       </div>
     </div>
 
-    <div class="overview-sections">
-      <div class="overview-section">
+    <div class="info-sections">
+      <div class="info-section">
         <div class="section-header">
-          <h3>商品管理总览</h3>
-          <el-button size="small" type="primary" @click="$emit('navigate', 'product')">查看全部</el-button>
+          <div class="section-title">
+            <div class="section-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+              <el-icon><Bell /></el-icon>
+            </div>
+            <h3>未读消息</h3>
+          </div>
+          <el-badge :value="unreadMessages.length" type="danger" class="section-badge" />
         </div>
-        <el-table :data="products.slice(0, 5)" style="width: 100%">
-          <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column prop="name" label="产品名称" width="150" />
-          <el-table-column prop="price" label="价格" width="100">
-            <template #default="scope">
-              ¥{{ scope.row.price }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="stock" label="库存" width="100">
-            <template #default="scope">
-              <el-tag :type="scope.row.stock > 50 ? 'success' : scope.row.stock > 20 ? 'warning' : 'danger'">
-                {{ scope.row.stock }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="category" label="分类" width="120">
-            <template #default="scope">
-              {{ getCategoryName(scope.row.category) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="120">
-            <template #default>
-              <el-button size="small" @click="$emit('navigate', 'product')">详情</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="message-list">
+          <div 
+            v-for="msg in unreadMessages" 
+            :key="msg.id" 
+            class="message-item"
+            :class="msg.type"
+          >
+            <div class="message-icon" :class="msg.type">
+              <el-icon v-if="msg.type === 'urge'"><Warning /></el-icon>
+              <el-icon v-else-if="msg.type === 'consult'"><ChatDotRound /></el-icon>
+              <el-icon v-else><InfoFilled /></el-icon>
+            </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-title">{{ msg.title }}</span>
+                <span class="message-time">{{ msg.time }}</span>
+              </div>
+              <div class="message-desc">{{ msg.content }}</div>
+            </div>
+          </div>
+          <div v-if="unreadMessages.length === 0" class="empty-tip">
+            <el-icon><Inbox /></el-icon>
+            <span>暂无未读消息</span>
+          </div>
+        </div>
       </div>
 
-      <div class="overview-section">
+      <div class="info-section">
         <div class="section-header">
-          <h3>用户管理总览</h3>
-          <el-button size="small" type="primary" @click="$emit('navigate', 'user')">查看全部</el-button>
+          <div class="section-title">
+            <div class="section-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+              <el-icon><Clock /></el-icon>
+            </div>
+            <h3>待办事件</h3>
+          </div>
+          <el-badge :value="pendingOrders.length" type="warning" class="section-badge" />
         </div>
-        <el-table :data="users.slice(0, 5)" style="width: 100%">
-          <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column prop="username" label="用户名" width="120" />
-          <el-table-column prop="email" label="邮箱" width="180" />
-          <el-table-column prop="role" label="角色" width="100">
-            <template #default="scope">
-              <el-tag :type="scope.row.role === '管理员' ? 'danger' : 'primary'">
-                {{ scope.row.role }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
-            <template #default="scope">
-              <el-tag :type="scope.row.status === '正常' ? 'success' : 'info'">
-                {{ scope.row.status }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="120">
-            <template #default>
-              <el-button size="small" @click="$emit('navigate', 'user')">详情</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="todo-list">
+          <div 
+            v-for="order in pendingOrders" 
+            :key="order.id" 
+            class="todo-item"
+          >
+            <div class="todo-status">
+              <el-icon><Box /></el-icon>
+            </div>
+            <div class="todo-content">
+              <div class="todo-header">
+                <span class="todo-title">订单 {{ order.id }}</span>
+                <el-tag size="small" type="warning">待发货</el-tag>
+              </div>
+              <div class="todo-info">
+                <span><el-icon><User /></el-icon> {{ order.customer }}</span>
+                <span><el-icon><Money /></el-icon> ¥{{ order.amount }}</span>
+                <span><el-icon><Calendar /></el-icon> {{ order.date }}</span>
+              </div>
+            </div>
+            <el-button size="small" type="primary" round @click="$emit('navigate', 'order')">
+              处理
+            </el-button>
+          </div>
+          <div v-if="pendingOrders.length === 0" class="empty-tip">
+            <el-icon><CircleCheck /></el-icon>
+            <span>暂无待办事项</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
-import { User, Goods, Document, Money } from '@element-plus/icons-vue'
+import { computed, ref } from 'vue'
+import { User, Goods, Document, Money, Bell, Clock, Warning, ChatDotRound, InfoFilled, Box, Top, Bottom, Minus, Calendar, Inbox, CircleCheck } from '@element-plus/icons-vue'
 import { products as productsData, categories as categoriesData } from '../../data/products'
 
 export default {
   name: 'DashboardHome',
-  components: { User, Goods, Document, Money },
+  components: { User, Goods, Document, Money, Bell, Clock, Warning, ChatDotRound, InfoFilled, Box, Top, Bottom, Minus, Calendar, Inbox, CircleCheck },
   props: {
     currentUser: { type: String, default: '' },
     users: { type: Array, default: () => [] },
@@ -135,44 +248,167 @@ export default {
       return props.orders.reduce((sum, o) => sum + (o.amount || 0), 0).toFixed(2)
     })
 
-    return { products, getCategoryName, totalRevenue }
+    const pendingOrders = computed(() => {
+      return props.orders.filter(o => o.status === '待发货')
+    })
+
+    const currentDate = computed(() => {
+      const now = new Date()
+      const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${weekDays[now.getDay()]}`
+    })
+
+    const unreadMessages = ref([
+      {
+        id: 1,
+        type: 'urge',
+        title: '催单提醒',
+        content: '客户张三催促订单 ORD001 尽快发货',
+        time: '5分钟前'
+      },
+      {
+        id: 2,
+        type: 'consult',
+        title: '咨询消息',
+        content: '客户李四咨询商品库存情况',
+        time: '15分钟前'
+      },
+      {
+        id: 3,
+        type: 'urge',
+        title: '催单提醒',
+        content: '客户王五询问订单 ORD002 发货进度',
+        time: '30分钟前'
+      },
+      {
+        id: 4,
+        type: 'consult',
+        title: '咨询消息',
+        content: '客户赵六咨询退款流程',
+        time: '1小时前'
+      },
+      {
+        id: 5,
+        type: 'notice',
+        title: '系统通知',
+        content: '本周销售报表已生成，请查看',
+        time: '2小时前'
+      }
+    ])
+
+    return { products, getCategoryName, totalRevenue, pendingOrders, unreadMessages, currentDate }
   }
 }
 </script>
 
 <style scoped>
-.dashboard-content h1 {
-  margin: 0 0 30px 0;
-  color: #303133;
+.dashboard-content {
+  padding: 0;
+}
+
+.welcome-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.welcome-text h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.welcome-subtitle {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.welcome-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  opacity: 0.9;
 }
 
 .stats-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin-top: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+  .welcome-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
 }
 
 .stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--card-color);
+  border-radius: 12px 0 0 12px;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-content {
   display: flex;
   align-items: center;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.stat-icon-wrapper {
+  margin-right: 16px;
 }
 
 .stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 20px;
+  background: var(--card-color);
   color: #fff;
-  font-size: 28px;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .stat-info {
@@ -180,43 +416,279 @@ export default {
 }
 
 .stat-number {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: #303133;
-  margin-bottom: 8px;
+  line-height: 1.2;
 }
 
 .stat-label {
   font-size: 14px;
   color: #909399;
+  margin-top: 4px;
 }
 
-.overview-sections {
+.stat-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stat-trend.up {
+  color: #67c23a;
+}
+
+.stat-trend.down {
+  color: #f56c6c;
+}
+
+.stat-compare {
+  font-size: 12px;
+  color: #c0c4cc;
+}
+
+.info-sections {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
-.overview-section {
+@media (max-width: 1000px) {
+  .info-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-section {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f0f2f5;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
-.section-header h3 {
-  margin: 0;
-  color: #303133;
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
   font-size: 18px;
+}
+
+.section-title h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
+  color: #303133;
+}
+
+.message-list,
+.todo-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.message-list::-webkit-scrollbar,
+.todo-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-list::-webkit-scrollbar-thumb,
+.todo-list::-webkit-scrollbar-thumb {
+  background: #dcdfe6;
+  border-radius: 3px;
+}
+
+.message-list::-webkit-scrollbar-thumb:hover,
+.todo-list::-webkit-scrollbar-thumb:hover {
+  background: #c0c4cc;
+}
+
+.message-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #fafafa;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.message-item:hover {
+  background: #f0f2f5;
+  transform: translateX(4px);
+}
+
+.message-item.urge {
+  border-left: 3px solid #f56c6c;
+}
+
+.message-item.consult {
+  border-left: 3px solid #409eff;
+}
+
+.message-item.notice {
+  border-left: 3px solid #67c23a;
+}
+
+.message-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.message-icon.urge {
+  background: linear-gradient(135deg, #f56c6c, #e65555);
+  color: #fff;
+}
+
+.message-icon.consult {
+  background: linear-gradient(135deg, #409eff, #3388e6);
+  color: #fff;
+}
+
+.message-icon.notice {
+  background: linear-gradient(135deg, #67c23a, #55a532);
+  color: #fff;
+}
+
+.message-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.message-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #909399;
+}
+
+.message-desc {
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.5;
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #fafafa;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.todo-item:hover {
+  background: #f0f2f5;
+  transform: translateX(4px);
+}
+
+.todo-status {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #e6a23c, #d48806);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.todo-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.todo-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.todo-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.todo-info span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.empty-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #c0c4cc;
+  font-size: 14px;
+}
+
+.empty-tip .el-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  color: #dcdfe6;
 }
 </style>
