@@ -2,8 +2,8 @@
   <div class="page-content">
     <div class="stats-section">
       <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-          <el-icon><Document /></el-icon>
+        <div class="stat-icon stat-icon-character" style="background: transparent;">
+          <MiniCartoonCharacter type="purple" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.total }}</div>
@@ -11,8 +11,8 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-          <el-icon><Van /></el-icon>
+        <div class="stat-icon stat-icon-character" style="background: transparent;">
+          <MiniCartoonCharacter type="black" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.pending }}</div>
@@ -20,8 +20,8 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-          <el-icon><CircleCheck /></el-icon>
+        <div class="stat-icon stat-icon-character" style="background: transparent;">
+          <MiniCartoonCharacter type="orange" />
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.completed }}</div>
@@ -29,8 +29,8 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-          <el-icon><Star /></el-icon>
+        <div class="stat-icon stat-icon-character" style="background: transparent;">
+          <MiniCartoonCharacter type="yellow" />
         </div>
         <div class="stat-info">
           <div class="stat-value">¥{{ stats.totalAmount }}</div>
@@ -141,6 +141,7 @@ import {
 import { products } from '@/data/products.js'
 import { urgentOrder } from '@/data/orders.js'
 import { ElMessage } from 'element-plus'
+import MiniCartoonCharacter from '@/components/MiniCartoonCharacter.vue'
 
 export default {
   name: 'UserOrder',
@@ -155,7 +156,8 @@ export default {
     RefreshLeft,
     ShoppingBag,
     Shop,
-    Bell
+    Bell,
+    MiniCartoonCharacter
   },
   props: {
     orders: {
@@ -333,6 +335,21 @@ export default {
   color: #fff;
   font-size: 28px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon-character {
+  box-shadow: none;
+  padding: 0;
+}
+
+.stat-icon-character .mini-character {
+  width: 100%;
+  height: 100%;
+  transform: scale(1.4);
+}
+
+.stat-icon-character .mini-character.standing {
+  transform: scale(1.4) translateY(-4px);
 }
 
 .stat-info {

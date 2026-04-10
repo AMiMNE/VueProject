@@ -9,7 +9,7 @@
       <div class="chat-header">
         <div class="header-left">
           <div class="ai-avatar">
-            <el-icon><Robot /></el-icon>
+            <MiniCartoonCharacter type="purple" :disable-mouse="true" />
           </div>
           <div class="ai-info">
             <h4>智能导购助手</h4>
@@ -26,7 +26,7 @@
       <div class="chat-messages" ref="messagesContainer">
         <div v-for="(msg, index) in messages" :key="index" class="message-item" :class="msg.role">
           <div v-if="msg.role === 'assistant'" class="avatar">
-            <el-icon><Robot /></el-icon>
+            <MiniCartoonCharacter type="purple" :disable-mouse="true" />
           </div>
           <div class="message-content">
             <div class="message-text">{{ msg.content }}</div>
@@ -64,13 +64,13 @@
             </div>
           </div>
           <div v-if="msg.role === 'user'" class="avatar">
-            <el-icon><User /></el-icon>
+            <MiniCartoonCharacter type="orange" :disable-mouse="true" />
           </div>
         </div>
         
         <div v-if="isTyping" class="message-item assistant">
           <div class="avatar">
-            <el-icon><Robot /></el-icon>
+            <MiniCartoonCharacter type="purple" :disable-mouse="true" />
           </div>
           <div class="message-content">
             <div class="typing-indicator">
@@ -113,6 +113,7 @@ import { ref, nextTick, watch } from 'vue'
 import { ChatDotRound, Close, Robot, User, Plus, Promotion, Delete } from '@element-plus/icons-vue'
 import { getAIResponse, askAboutProduct } from '@/services/aiService'
 import { ElMessage } from 'element-plus'
+import MiniCartoonCharacter from './MiniCartoonCharacter.vue'
 
 const emit = defineEmits(['addToCart', 'productClick'])
 
@@ -292,14 +293,11 @@ defineExpose({
 }
 
 .ai-avatar {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
 }
 
 .ai-info h4 {
@@ -346,20 +344,12 @@ defineExpose({
 }
 
 .message-item .avatar {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 18px;
   flex-shrink: 0;
-}
-
-.message-item.user .avatar {
-  background: linear-gradient(135deg, #42b983 0%, #35a070 100%);
 }
 
 .message-content {

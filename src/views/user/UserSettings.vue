@@ -13,7 +13,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">
-                <span class="card-icon notification">🔔</span>
+                <MiniCartoonCharacter type="orange" class="card-icon-character" />
                 通知设置
               </span>
             </div>
@@ -47,7 +47,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">
-                <span class="card-icon display">🎨</span>
+                <MiniCartoonCharacter type="purple" class="card-icon-character" />
                 显示设置
               </span>
             </div>
@@ -83,7 +83,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">
-                <span class="card-icon security">🔒</span>
+                <MiniCartoonCharacter type="black" class="card-icon-character" />
                 安全与隐私
               </span>
             </div>
@@ -124,7 +124,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">
-                <span class="card-icon logout">🚪</span>
+                <MiniCartoonCharacter type="yellow" class="card-icon-character" />
                 账户操作
               </span>
             </div>
@@ -183,12 +183,14 @@ import {
   ArrowRight,
   SwitchButton
 } from '@element-plus/icons-vue'
+import MiniCartoonCharacter from '@/components/MiniCartoonCharacter.vue'
 
 export default {
   name: 'UserSettings',
   components: {
     ArrowRight,
-    SwitchButton
+    SwitchButton,
+    MiniCartoonCharacter
   },
   props: {
     settings: {
@@ -438,6 +440,16 @@ export default {
   border-radius: 10px;
 }
 
+.card-icon-character {
+  width: 36px;
+  height: 36px;
+}
+
+.card-icon-character .mini-character {
+  width: 100%;
+  height: 100%;
+}
+
 .card-icon.notification {
   background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
 }
@@ -456,6 +468,12 @@ export default {
 
 .card-icon.about {
   background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+}
+
+.card-icon-character {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .setting-items {
