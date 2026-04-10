@@ -40,6 +40,19 @@
           @change="handleOrderDateChange"
         />
       </div>
+      <div class="filter-item">
+        <label>催单：</label>
+        <el-select
+          v-model="orderUrgent"
+          placeholder="催单状态"
+          clearable
+          @change="filterOrders"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="已催单" value="urgent" />
+          <el-option label="未催单" value="not-urgent" />
+        </el-select>
+      </div>
     </div>
     <el-table :data="filteredOrders" style="width: 100%">
       <el-table-column prop="id" label="订单号" width="120" />
@@ -50,6 +63,14 @@
           <el-tag :type="getStatusType(scope.row.status)">
             {{ scope.row.status }}
           </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="催单" width="100">
+        <template #default="scope">
+          <el-tag v-if="scope.row.urgentCount > 0" type="danger">
+            已催单 ({{ scope.row.urgentCount }})
+          </el-tag>
+          <span v-else style="color: #909399;">-</span>
         </template>
       </el-table-column>
       <el-table-column prop="date" label="日期" width="120" />
@@ -125,6 +146,7 @@
 import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { updateOrderStatus } from '@/data/orders.js'
 
 export default {
   name: 'DashboardOrder',
@@ -132,10 +154,12 @@ export default {
   props: {
     orders: { type: Array, default: () => [] }
   },
-  setup(props) {
+  emits: ['orderUpdated'],
+  setup(props, { emit }) {
     const orderSearch = ref('')
     const orderStatus = ref('')
     const orderDate = ref(null)
+    const orderUrgent = ref('')
     const filteredOrders = ref([...props.orders])
     const detailDialogVisible = ref(false)
     const currentOrder = ref(null)
@@ -144,12 +168,15 @@ export default {
       filteredOrders.value = props.orders.filter(order => {
         const matchSearch = orderSearch.value === '' ||
           order.id.toLowerCase().includes(orderSearch.value.toLowerCase()) ||
-          order.customer.includes(orderSearch.value)
+          (order.customer && order.customer.includes(orderSearch.value))
         const matchStatus = orderStatus.value === '' ||
           order.status === orderStatus.value
         const matchDate = orderDate.value === null ||
           order.date === formatDate(orderDate.value)
-        return matchSearch && matchStatus && matchDate
+        const matchUrgent = orderUrgent.value === '' ||
+          (orderUrgent.value === 'urgent' && order.urgentCount > 0) ||
+          (orderUrgent.value === 'not-urgent' && !order.urgentCount)
+        return matchSearch && matchStatus && matchDate && matchUrgent
       })
     }
 
@@ -186,8 +213,14 @@ export default {
     }
 
     const handleShip = (order) => {
-      order.status = '已发货'
-      ElMessage.success('订单已发货')
+      const success = updateOrderStatus(order.id, '已发货')
+      if (success) {
+        order.status = '已发货'
+        ElMessage.success('订单已发货')
+        emit('orderUpdated')
+      } else {
+        ElMessage.error('发货失败')
+      }
     }
 
     const showOrderDetail = (order) => {
@@ -195,17 +228,23 @@ export default {
       detailDialogVisible.value = true
     }
 
-    watch(orderSearch, () => { filterOrders() }, { immediate: true })
+    watch(() => props.orders, () => {
+      filterOrders()
+    }, { immediate: true, deep: true })
+
+    watch(orderSearch, () => { filterOrders() })
 
     return {
       orderSearch,
       orderStatus,
       orderDate,
+      orderUrgent,
       filteredOrders,
       getStatusType,
       handleOrderSearchClear,
       handleOrderStatusChange,
       handleOrderDateChange,
+      filterOrders,
       handleShip,
       detailDialogVisible,
       currentOrder,

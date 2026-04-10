@@ -97,6 +97,10 @@
             <span class="order-total">合计：<strong>¥{{ order.totalAmount }}</strong></span>
           </div>
           <div class="order-actions">
+            <el-button v-if="order.status === '待发货'" type="warning" size="small" @click="handleUrgent(order)">
+              <el-icon><Bell /></el-icon>
+              催单 {{ order.urgentCount > 0 ? `(${order.urgentCount})` : '' }}
+            </el-button>
             <el-button size="small" @click="$emit('viewDetail', order)">
               <el-icon><View /></el-icon>
               查看详情
@@ -131,9 +135,12 @@ import {
   View,
   RefreshLeft,
   ShoppingBag,
-  Shop
+  Shop,
+  Bell
 } from '@element-plus/icons-vue'
 import { products } from '@/data/products.js'
+import { urgentOrder } from '@/data/orders.js'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'UserOrder',
@@ -147,7 +154,8 @@ export default {
     View,
     RefreshLeft,
     ShoppingBag,
-    Shop
+    Shop,
+    Bell
   },
   props: {
     orders: {
@@ -155,7 +163,7 @@ export default {
       default: () => []
     }
   },
-  emits: ['viewDetail', 'buyAgain', 'goShopping'],
+  emits: ['viewDetail', 'buyAgain', 'goShopping', 'orderUpdated'],
   setup(props, { emit }) {
     const activeFilter = ref('all')
 
@@ -203,6 +211,16 @@ export default {
       })
     }
 
+    const handleUrgent = (order) => {
+      const result = urgentOrder(order.id)
+      if (result.success) {
+        ElMessage.success(result.message)
+        emit('orderUpdated')
+      } else {
+        ElMessage.error(result.message)
+      }
+    }
+
     const emitBuyAgain = (order) => {
       const enhancedOrder = {
         ...order,
@@ -218,6 +236,7 @@ export default {
       getStatusType,
       getProductImage,
       getFullOrderItems,
+      handleUrgent,
       emitBuyAgain
     }
   }

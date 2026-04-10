@@ -78,6 +78,7 @@
             <DashboardOrder
               v-else-if="activeMenu === 'order'"
               :orders="orders"
+              @order-updated="loadData"
             />
             <DashboardSettings
               v-else-if="activeMenu === 'settings'"
@@ -102,6 +103,8 @@ import {
   Avatar,
   ArrowDown
 } from '@element-plus/icons-vue'
+import { getUsers } from '@/data/users.js'
+import { getOrders, updateOrderStatus } from '@/data/orders.js'
 import DashboardHome from './admin/DashboardHome.vue'
 import DashboardManageUser from './admin/DashboardManageUser.vue'
 import DashboardProduct from './admin/DashboardProduct.vue'
@@ -131,71 +134,22 @@ export default {
     const currentUser = ref('')
     const isCollapsed = ref(false)
 
-    const users = ref([
-      // 管理员
-      { id: 'A001', username: 'admin', phone: '13800138000', role: '管理员', status: '正常' },
-      { id: 'A002', username: 'admin2', phone: '13800138001', role: '管理员', status: '正常' },
-      { id: 'A003', username: 'admin3', phone: '13800138002', role: '管理员', status: '禁用' },
-      
-      // 用户
-      { id: 'U001', username: 'user', phone: '13900139000', role: '用户', status: '正常' },
-      { id: 'U002', username: 'test', phone: '13700137000', role: '用户', status: '禁用' },
-      { id: 'U003', username: 'zhangsan', phone: '13600136000', role: '用户', status: '正常' },
-      { id: 'U004', username: 'lisi', phone: '13500135000', role: '用户', status: '正常' },
-      { id: 'U005', username: 'wangwu', phone: '13400134000', role: '用户', status: '正常' },
-      { id: 'U006', username: 'zhaoliu', phone: '13300133000', role: '用户', status: '正常' },
-      { id: 'U007', username: 'sunqi', phone: '13200132000', role: '用户', status: '禁用' },
-      { id: 'U008', username: 'zhouba', phone: '13100131000', role: '用户', status: '正常' },
-      { id: 'U009', username: 'wujiu', phone: '13000130000', role: '用户', status: '正常' },
-      { id: 'U010', username: 'shiyi', phone: '12900129000', role: '用户', status: '正常' }
-    ])
+    const users = ref([])
+    const orders = ref([])
 
-    const orders = ref([
-      {
-        id: 'ORD001',
-        customer: '张三',
-        amount: 199.99,
-        status: '待发货',
-        date: '2024-01-15',
-        totalAmount: '199.99',
-        itemCount: 8,
-        items: [
-          { productId: 'P001', name: '农夫山泉', price: 2.00, discount: 1, quantity: 50, unit: '瓶', subtotal: '100.00' },
-          { productId: 'P002', name: '可口可乐', price: 3.00, discount: 0.95, quantity: 35, unit: '瓶', subtotal: '99.75' }
-        ]
-      },
-      {
-        id: 'ORD002',
-        customer: '李四',
-        amount: 99.99,
-        status: '已发货',
-        date: '2024-01-14',
-        totalAmount: '99.99',
-        itemCount: 5,
-        items: [
-          { productId: 'P005', name: '乐事薯片', price: 6.50, discount: 1, quantity: 10, unit: '袋', subtotal: '65.00' },
-          { productId: 'P013', name: '伊利纯牛奶', price: 12.00, discount: 0.95, quantity: 3, unit: '箱', subtotal: '34.20' }
-        ]
-      },
-      {
-        id: 'ORD003',
-        customer: '王五',
-        amount: 299.99,
-        status: '已完成',
-        date: '2024-01-13',
-        totalAmount: '299.99',
-        itemCount: 15,
-        items: [
-          { productId: 'P011', name: '新鲜鸡蛋', price: 15.00, discount: 1, quantity: 10, unit: '盒', subtotal: '150.00' },
-          { productId: 'P012', name: '新鲜西红柿', price: 4.50, discount: 1, quantity: 20, unit: '斤', subtotal: '90.00' },
-          { productId: 'P003', name: '康师傅冰红茶', price: 3.50, discount: 1, quantity: 15, unit: '瓶', subtotal: '52.50' }
-        ]
-      }
-    ])
+    const loadData = () => {
+      const rawUsers = getUsers()
+      users.value = rawUsers.map(u => ({
+        ...u,
+        role: u.role === 'admin' ? '管理员' : '用户'
+      }))
+      orders.value = getOrders()
+    }
 
     onMounted(() => {
       const username = localStorage.getItem('username')
       currentUser.value = username || '用户'
+      loadData()
     })
 
     const handleMenuSelect = (index) => {
@@ -205,6 +159,7 @@ export default {
     const handleCommand = (command) => {
       if (command === 'logout') {
         localStorage.removeItem('username')
+        localStorage.removeItem('userRole')
         router.push('/login')
       } else if (command === 'profile') {
         alert('个人信息功能开发中...')

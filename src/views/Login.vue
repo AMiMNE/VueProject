@@ -106,6 +106,7 @@
 
 <script>
 import { useRouter } from 'vue-router'
+import { validateUser } from '@/data/users.js'
 
 export default {
   name: 'Login',
@@ -129,11 +130,7 @@ export default {
       },
       showPasswordValidation: false,
       showRoleError: false,
-      showPasswordError: false,
-      mockUsers: [
-        { username: 'admin', password: 'Admin123', role: 'admin' },
-        { username: 'user', password: 'User123', role: 'user' }
-      ]
+      showPasswordError: false
     }
   },
   methods: {
@@ -174,19 +171,25 @@ export default {
       this.loading = true
 
       setTimeout(() => {
-        localStorage.setItem('username', this.formData.username)
-        localStorage.setItem('userRole', this.formData.role)
+        const user = validateUser(this.formData.username, this.formData.password, this.formData.role)
+        
+        if (user) {
+          localStorage.setItem('username', this.formData.username)
+          localStorage.setItem('userRole', this.formData.role)
 
-        if (this.formData.remember) {
-          localStorage.setItem('remember', 'true')
-        } else {
-          localStorage.removeItem('remember')
-        }
+          if (this.formData.remember) {
+            localStorage.setItem('remember', 'true')
+          } else {
+            localStorage.removeItem('remember')
+          }
 
-        if (this.formData.role === 'admin') {
-          this.router.push('/dashboard')
+          if (this.formData.role === 'admin') {
+            this.router.push('/dashboard')
+          } else {
+            this.router.push('/dashboard-user')
+          }
         } else {
-          this.router.push('/dashboard-user')
+          this.showPasswordError = true
         }
 
         this.loading = false

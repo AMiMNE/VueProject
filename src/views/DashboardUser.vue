@@ -74,6 +74,7 @@
               @view-detail="viewOrderDetail"
               @go-shopping="activeMenu = 'dashboard'"
               @buy-again="handleBuyAgain"
+              @order-updated="refreshOrders"
             />
             <UserSettings
               v-else-if="activeMenu === 'settings'"
@@ -201,7 +202,7 @@ import {
   ArrowDown,
   Delete
 } from '@element-plus/icons-vue'
-import { getOrders, createOrder } from '@/data/orders.js'
+import { getOrdersByUsername, createOrder } from '@/data/orders.js'
 import UserHome from './user/UserHome.vue'
 import UserProfile from './user/UserProfile.vue'
 import UserOrder from './user/UserOrder.vue'
@@ -268,7 +269,7 @@ export default {
         cartItems.value = JSON.parse(savedCart)
       }
 
-      orders.value = getOrders()
+      orders.value = getOrdersByUsername(username)
     })
 
     const handleMenuSelect = (index) => {
@@ -352,9 +353,10 @@ export default {
         return
       }
 
-      const newOrder = createOrder(cartItems.value, cartTotal.value)
+      const username = localStorage.getItem('username')
+      const newOrder = createOrder(cartItems.value, cartTotal.value, username)
 
-      orders.value = getOrders()
+      orders.value = getOrdersByUsername(username)
 
       cartItems.value = []
       localStorage.removeItem('cartItems')
@@ -369,6 +371,11 @@ export default {
     const viewOrderDetail = (order) => {
       currentOrderDetail.value = order
       showOrderDetail.value = true
+    }
+
+    const refreshOrders = () => {
+      const username = localStorage.getItem('username')
+      orders.value = getOrdersByUsername(username)
     }
 
     const handleBuyAgain = (order) => {
@@ -415,6 +422,7 @@ export default {
       removeFromCart,
       handleCheckout,
       viewOrderDetail,
+      refreshOrders,
       handleBuyAgain
     }
   }
