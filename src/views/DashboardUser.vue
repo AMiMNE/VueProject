@@ -47,7 +47,6 @@
                 <el-dropdown-menu>
                   <el-dropdown-item command="profile">个人信息</el-dropdown-item>
                   <el-dropdown-item command="settings">设置</el-dropdown-item>
-                  <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -61,6 +60,7 @@
               :cart-count="cartCount"
               @open-cart="showCart = true"
               @add-to-cart="addToCart"
+              @ask-ai="handleAskAI"
             />
             <UserProfile
               v-else-if="activeMenu === 'profile'"
@@ -185,6 +185,8 @@
         </div>
       </div>
     </el-drawer>
+
+    <AIChatAssistant ref="aiAssistantRef" @add-to-cart="addToCart" />
   </div>
 </template>
 
@@ -207,6 +209,7 @@ import UserHome from './user/UserHome.vue'
 import UserProfile from './user/UserProfile.vue'
 import UserOrder from './user/UserOrder.vue'
 import UserSettings from './user/UserSettings.vue'
+import AIChatAssistant from '@/components/AIChatAssistant.vue'
 
 export default {
   name: 'DashboardUser',
@@ -222,10 +225,12 @@ export default {
     UserHome,
     UserProfile,
     UserOrder,
-    UserSettings
+    UserSettings,
+    AIChatAssistant
   },
   setup() {
     const router = useRouter()
+    const aiAssistantRef = ref(null)
     const activeMenu = ref('dashboard')
     const currentUser = ref('')
     const isCollapsed = ref(false)
@@ -401,7 +406,14 @@ export default {
       ElMessage.success('已将商品加入购物车')
     }
 
+    const handleAskAI = (product) => {
+      if (aiAssistantRef.value) {
+        aiAssistantRef.value.askAboutProduct(product)
+      }
+    }
+
     return {
+      aiAssistantRef,
       activeMenu,
       currentUser,
       showCart,
@@ -423,7 +435,8 @@ export default {
       handleCheckout,
       viewOrderDetail,
       refreshOrders,
-      handleBuyAgain
+      handleBuyAgain,
+      handleAskAI
     }
   }
 }

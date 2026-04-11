@@ -1,16 +1,24 @@
 <template>
   <div class="page-content shopping-content">
     <div class="banner-section">
-      <el-carousel height="320px" :interval="4000" arrow="hover">
+      <el-carousel height="320px" :interval="4000" arrow="hover" @change="handleBannerChange">
         <el-carousel-item v-for="(item, index) in bannerList" :key="index">
-          <div class="banner-item" :style="{ background: item.bgColor }">
+          <div 
+            class="banner-item" 
+            :style="{ background: item.bgColor }"
+            @mouseenter="handleBannerMouseEnter(index)"
+            @mouseleave="handleBannerMouseLeave(index)"
+          >
             <div class="banner-content">
               <div class="banner-text">
                 <h2>{{ item.title }}</h2>
-                <p>{{ item.subtitle }}</p>
+                <p :class="{ 'subtitle-visible': bannerHoverStates[index] }">{{ item.subtitle }}</p>
               </div>
-              <div class="banner-image">
-                <img v-if="item.image" :src="item.image" :alt="item.title" />
+              <div class="banner-character-wrapper">
+                <BannerCartoonCharacter 
+                  :type="item.characterType"
+                  :open-mouth="bannerHoverStates[index]"
+                />
               </div>
             </div>
           </div>
@@ -83,10 +91,16 @@
             </div>
           </div>
           <div class="product-action">
-            <el-button type="primary" @click.stop="addToCart(product)">
-              <el-icon><Plus /></el-icon>
-              加入购物车
-            </el-button>
+            <div class="action-buttons">
+              <el-button type="info" size="small" @click.stop="askAI(product, $event)">
+                <el-icon><ChatDotRound /></el-icon>
+                问AI
+              </el-button>
+              <el-button type="primary" size="small" @click.stop="addToCart(product)">
+                <el-icon><Plus /></el-icon>
+                加入购物车
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -126,10 +140,16 @@
             </div>
           </div>
           <div class="product-action">
-            <el-button type="primary" @click.stop="addToCart(product)">
-              <el-icon><Plus /></el-icon>
-              加入购物车
-            </el-button>
+            <div class="action-buttons">
+              <el-button type="info" size="small" @click.stop="askAI(product, $event)">
+                <el-icon><ChatDotRound /></el-icon>
+                问AI
+              </el-button>
+              <el-button type="primary" size="small" @click.stop="addToCart(product)">
+                <el-icon><Plus /></el-icon>
+                加入购物车
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -147,9 +167,11 @@ import {
   Search,
   Star,
   Goods,
-  Plus
+  Plus,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 import { categories, products, hotProducts, getProductsByCategory } from '@/data/products.js'
+import BannerCartoonCharacter from '@/components/BannerCartoonCharacter.vue'
 
 export default {
   name: 'UserHome',
@@ -159,7 +181,9 @@ export default {
     Search,
     Star,
     Goods,
-    Plus
+    Plus,
+    ChatDotRound,
+    BannerCartoonCharacter
   },
   props: {
     cartCount: {
@@ -167,39 +191,54 @@ export default {
       default: 0
     }
   },
-  emits: ['openCart', 'addToCart'],
+  emits: ['openCart', 'addToCart', 'askAI'],
   setup(props, { emit }) {
     const activeCategory = ref('all')
     const searchKeyword = ref('')
     const priceRange = ref([0, 50])
     const selectedTags = ref([])
 
+    const activeBannerIndex = ref(0)
+    const bannerHoverStates = ref([false, false, false, false])
+    
     const bannerList = ref([
       {
         title: '新鲜直达',
         subtitle: '每日新鲜水果蔬菜，品质保证',
         bgColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        image: hotProducts.find(p => p.id === 'P011')?.image || ''
+        characterType: 'purple'
       },
       {
         title: '限时特惠',
         subtitle: '精选商品，超值折扣',
         bgColor: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        image: hotProducts.find(p => p.id === 'P015')?.image || ''
+        characterType: 'black'
       },
       {
         title: '健康饮品',
         subtitle: '多种健康饮品，清凉一夏',
         bgColor: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        image: hotProducts.find(p => p.id === 'P001')?.image || ''
+        characterType: 'orange'
       },
       {
         title: '美味零食',
         subtitle: '追剧必备，美味不停',
         bgColor: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-        image: hotProducts.find(p => p.id === 'P005')?.image || ''
+        characterType: 'yellow'
       }
     ])
+    
+    const handleBannerChange = (index) => {
+      activeBannerIndex.value = index
+    }
+    
+    const handleBannerMouseEnter = (index) => {
+      bannerHoverStates.value[index] = true
+    }
+    
+    const handleBannerMouseLeave = (index) => {
+      bannerHoverStates.value[index] = false
+    }
 
     const allTags = computed(() => {
       const tags = new Set()
@@ -256,11 +295,18 @@ export default {
       emit('addToCart', product)
     }
 
+    const askAI = (product, event) => {
+      event.stopPropagation()
+      emit('askAI', product)
+    }
+
     return {
       categories,
       products,
       hotProducts,
       bannerList,
+      activeBannerIndex,
+      bannerHoverStates,
       activeCategory,
       searchKeyword,
       allTags,
@@ -270,7 +316,11 @@ export default {
       currentCategoryName,
       filteredProducts,
       handleImageError,
-      addToCart
+      addToCart,
+      askAI,
+      handleBannerChange,
+      handleBannerMouseEnter,
+      handleBannerMouseLeave
     }
   }
 }
@@ -299,15 +349,17 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   padding: 0 50px;
   box-sizing: border-box;
+  padding-bottom: 30px;
 }
 
 .banner-text {
   flex: 1;
   color: #fff;
+  margin-bottom: 20px;
 }
 
 .banner-text h2 {
@@ -315,26 +367,29 @@ export default {
   font-weight: bold;
   margin: 0 0 15px 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease;
 }
 
 .banner-text p {
   font-size: 20px;
   margin: 0;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.banner-text p.subtitle-visible {
   opacity: 0.95;
+  max-height: 100px;
 }
 
-.banner-image {
-  flex: 1;
+.banner-character-wrapper {
+  flex: 0 0 auto;
   display: flex;
+  align-items: flex-end;
   justify-content: center;
-  align-items: center;
-}
-
-.banner-image img {
-  max-height: 250px;
-  max-width: 350px;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  height: 280px;
 }
 
 .banner-section :deep(.el-carousel__arrow) {
@@ -610,13 +665,21 @@ export default {
   padding: 0 15px 15px;
 }
 
-.product-action .el-button {
-  width: 100%;
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-buttons .el-button {
+  flex: 1;
+}
+
+.action-buttons .el-button[type="primary"] {
   background-color: #42b983;
   border-color: #42b983;
 }
 
-.product-action .el-button:hover {
+.action-buttons .el-button[type="primary"]:hover {
   background-color: #35a070;
   border-color: #35a070;
 }

@@ -44,20 +44,25 @@
     <div class="right-section">
       <div class="login-container">
         <div class="login-title">用户登录</div>
-        <el-form :model="formData" :rules="loginRules" ref="loginFormRef">
+        <!-- ref= 用于创建引用，将当前的表单实例赋值给loginFormRef变量 -->
+         <!-- loginForm相当于表单内容，loginRules相当于表单本身 -->
+        <el-form :model="loginForm" :rules="loginRules" ref="loginFormRef">
+          <!-- 用户名输入框 -->
+          <!-- prop值分别与loginForm和loginRules中的属性名对应，实现数据和校验的绑定 -->
           <el-form-item prop="username">
             <el-input 
-              v-model="formData.username" 
+              v-model="loginForm.username" 
               placeholder="请输入用户名"
               prefix-icon="User"
               size="large"
             />
           </el-form-item>
 
+          <!-- 密码输入框 -->
           <el-form-item prop="password">
             <el-input 
               :type="showPassword ? 'text' : 'password'" 
-              v-model="formData.password" 
+              v-model="loginForm.password" 
               placeholder="请输入密码"
               prefix-icon="Lock"
               size="large"
@@ -71,17 +76,7 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item prop="role">
-            <el-select v-model="formData.role" placeholder="请选择身份" size="large" style="width: 100%;">
-              <el-option label="管理员" value="admin" />
-              <el-option label="用户" value="user" />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item>
-            <el-checkbox v-model="formData.remember">记住我</el-checkbox>
-          </el-form-item>
-
+          <!-- 登录按钮 -->
           <el-form-item>
             <el-button 
               type="primary" 
@@ -103,16 +98,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { validateUser } from '@/data/users.js'
 
 const router = useRouter()
 
 const loginFormRef = ref(null)
-const formData = ref({
+const loginForm = ref({
   username: '',
-  password: '',
-  role: '',
-  remember: false
+  password: ''
 })
 const loading = ref(false)
 const showPassword = ref(false)
@@ -122,6 +114,8 @@ const isPurplePeeking = ref(false)
 const validateUsername = (rule, value, callback) => {
   if (!value) {
     callback(new Error('请输入用户名'))
+  } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
+    callback(new Error('用户名只能包含字母和数字'))
   } else {
     callback()
   }
@@ -130,14 +124,8 @@ const validateUsername = (rule, value, callback) => {
 const validatePassword = (rule, value, callback) => {
   if (!value) {
     callback(new Error('请输入密码'))
-  } else {
-    callback()
-  }
-}
-
-const validateRole = (rule, value, callback) => {
-  if (!value) {
-    callback(new Error('请选择身份'))
+  } else if (value.length < 6) {
+    callback(new Error('密码长度至少6位'))
   } else {
     callback()
   }
@@ -145,13 +133,10 @@ const validateRole = (rule, value, callback) => {
 
 const loginRules = {
   username: [
-    { required: true, validator: validateUsername, trigger: 'blur' }
+    { required: true, validator: validateUsername, trigger: 'blur' }//validator：验证器
   ],
   password: [
     { required: true, validator: validatePassword, trigger: 'blur' }
-  ],
-  role: [
-    { required: true, validator: validateRole, trigger: 'change' }
   ]
 }
 
@@ -200,6 +185,7 @@ const togglePassword = () => {
   }
 }
 
+//登录校验时使用loginFormRef（“表单本身”）进行，而非loginForm（“表单内容”）
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   
@@ -207,30 +193,10 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       setTimeout(() => {
-        const user = validateUser(formData.value.username, formData.value.password, formData.value.role)
-        
-        if (user) {
-          localStorage.setItem('username', formData.value.username)
-          localStorage.setItem('userRole', formData.value.role)
-
-          if (formData.value.remember) {
-            localStorage.setItem('remember', 'true')
-          } else {
-            localStorage.removeItem('remember')
-          }
-
-          if (formData.value.role === 'admin') {
-            router.push('/dashboard')
-          } else {
-            router.push('/dashboard-user')
-          }
-          ElMessage.success('登录成功！')
-        } else {
-          ElMessage.error('用户名或密码错误')
-        }
-
         loading.value = false
-      }, 1000)
+        ElMessage.success('登录成功！')
+        router.push('/still-us')
+      }, 1500)
     }
   })
 }
@@ -370,12 +336,6 @@ onMounted(() => {
   document.addEventListener('mousemove', handleMouseMove)
   
   setTimeout(blink, 3000)
-  
-  const savedUsername = localStorage.getItem('username')
-  if (savedUsername) {
-    formData.value.username = savedUsername
-    formData.value.remember = true
-  }
 })
 
 onUnmounted(() => {
