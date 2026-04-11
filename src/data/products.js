@@ -32,7 +32,8 @@ export const products = [
     barCode: '6920552655001',
     discount: 1,
     isHot: true,
-    tags: ['热销', '解渴']
+    tags: ['热销', '解渴'],
+    status: 'onshelf'
   },
   {
     id: 'P002',
@@ -46,7 +47,8 @@ export const products = [
     barCode: '6920552655002',
     discount: 0.95,
     isHot: true,
-    tags: ['热销', '碳酸']
+    tags: ['热销', '碳酸'],
+    status: 'onshelf'
   },
   {
     id: 'P003',
@@ -60,7 +62,8 @@ export const products = [
     barCode: '6920552655003',
     discount: 1,
     isHot: false,
-    tags: ['茶饮']
+    tags: ['茶饮'],
+    status: 'onshelf'
   },
   {
     id: 'P004',
@@ -74,7 +77,8 @@ export const products = [
     barCode: '6920552655004',
     discount: 1,
     isHot: false,
-    tags: ['茶饮', '健康']
+    tags: ['茶饮', '健康'],
+    status: 'onshelf'
   },
   {
     id: 'P005',
@@ -88,7 +92,8 @@ export const products = [
     barCode: '6920552655005',
     discount: 1,
     isHot: true,
-    tags: ['热销', '膨化']
+    tags: ['热销', '膨化'],
+    status: 'onshelf'
   },
   {
     id: 'P006',
@@ -102,7 +107,8 @@ export const products = [
     barCode: '6920552655006',
     discount: 0.9,
     isHot: false,
-    tags: ['饼干', '甜点']
+    tags: ['饼干', '甜点'],
+    status: 'onshelf'
   },
   {
     id: 'P007',
@@ -116,7 +122,8 @@ export const products = [
     barCode: '6920552655007',
     discount: 1,
     isHot: true,
-    tags: ['辣味', '童年']
+    tags: ['辣味', '童年'],
+    status: 'onshelf'
   },
   {
     id: 'P008',
@@ -126,11 +133,12 @@ export const products = [
     unit: '提',
     stock: 100,
     image: getImage('tissue'),
-    description: '抽纸 3层120抽*3包',
+    description: '抽纸 3 层 120 抽*3 包',
     barCode: '6920552655008',
     discount: 1,
     isHot: false,
-    tags: ['生活用纸']
+    tags: ['生活用纸'],
+    status: 'onshelf'
   },
   {
     id: 'P009',
@@ -144,7 +152,8 @@ export const products = [
     barCode: '6920552655009',
     discount: 0.85,
     isHot: false,
-    tags: ['清洁', '厨房']
+    tags: ['清洁', '厨房'],
+    status: 'onshelf'
   },
   {
     id: 'P010',
@@ -158,7 +167,8 @@ export const products = [
     barCode: '6920552655010',
     discount: 1,
     isHot: false,
-    tags: ['驱蚊', '夏季']
+    tags: ['驱蚊', '夏季'],
+    status: 'onshelf'
   },
   {
     id: 'P011',
@@ -168,11 +178,12 @@ export const products = [
     unit: '盒',
     stock: 50,
     image: getImage('eggs'),
-    description: '土鸡蛋 12枚',
+    description: '土鸡蛋 12 枚',
     barCode: '6920552655011',
     discount: 1,
     isHot: true,
-    tags: ['生鲜', '营养']
+    tags: ['生鲜', '营养'],
+    status: 'onshelf'
   },
   {
     id: 'P012',
@@ -182,11 +193,12 @@ export const products = [
     unit: '斤',
     stock: 40,
     image: getImage('tomato'),
-    description: '500g 约2-3个',
+    description: '500g 约 2-3 个',
     barCode: '6920552655012',
     discount: 1,
     isHot: false,
-    tags: ['蔬菜', '新鲜']
+    tags: ['蔬菜', '新鲜'],
+    status: 'onshelf'
   },
   {
     id: 'P013',
@@ -196,11 +208,12 @@ export const products = [
     unit: '箱',
     stock: 70,
     image: getImage('milk'),
-    description: '250ml*12盒',
+    description: '250ml*12 盒',
     barCode: '6920552655013',
     discount: 0.95,
     isHot: true,
-    tags: ['牛奶', '补钙']
+    tags: ['牛奶', '补钙'],
+    status: 'onshelf'
   },
   {
     id: 'P014',
@@ -210,11 +223,12 @@ export const products = [
     unit: '箱',
     stock: 45,
     image: getImage('yogurt'),
-    description: '100g*12杯',
+    description: '100g*12 杯',
     barCode: '6920552655014',
     discount: 1,
     isHot: false,
-    tags: ['酸奶', '益生菌']
+    tags: ['酸奶', '益生菌'],
+    status: 'onshelf'
   },
   {
     id: 'P015',
@@ -228,7 +242,8 @@ export const products = [
     barCode: '6920552655015',
     discount: 1,
     isHot: true,
-    tags: ['速食', '泡面']
+    tags: ['速食', '泡面'],
+    status: 'onshelf'
   },
   {
     id: 'P016',
@@ -242,7 +257,8 @@ export const products = [
     barCode: '6920552655016',
     discount: 0.9,
     isHot: false,
-    tags: ['速食', '泡面', '酸菜']
+    tags: ['速食', '泡面', '酸菜'],
+    status: 'onshelf'
   },
   {
     id: 'P017',
@@ -256,7 +272,8 @@ export const products = [
     barCode: '6920552655017',
     discount: 1,
     isHot: false,
-    tags: ['早餐', '健康']
+    tags: ['早餐', '健康'],
+    status: 'onshelf'
   },
   {
     id: 'P018',
@@ -266,11 +283,12 @@ export const products = [
     unit: '瓶',
     stock: 100,
     image: getImage('juice'),
-    description: '100%果汁 450ml',
+    description: '100% 果汁 450ml',
     barCode: '6920552655018',
     discount: 1,
     isHot: false,
-    tags: ['果汁', '健康']
+    tags: ['果汁', '健康'],
+    status: 'onshelf'
   }
 ]
 

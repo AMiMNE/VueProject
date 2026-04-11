@@ -1,6 +1,37 @@
 <template>
   <div class="page-content">
     <h2>用户管理</h2>
+    
+    <div class="stats-cards">
+      <div class="stat-card user-card" @click="filterByRole('')">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><User /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ totalUsers }}</div>
+            <div class="stat-label">用户总数</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stat-card admin-card" @click="filterByRole('管理员')">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><UserFilled /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ totalAdmins }}</div>
+            <div class="stat-label">管理员数量</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="filter-bar">
       <div class="filter-item">
         <label>搜索：</label>
@@ -33,7 +64,7 @@
         添加用户
       </el-button>
     </div>
-    <el-table :data="filteredUsers" style="width: 100%">
+    <el-table :data="filteredUsers" style="width: 100%" :key="tableKey">
       <el-table-column prop="id" label="ID"  />
       <el-table-column prop="username" label="用户名"  />
       <el-table-column prop="phone" label="电话号码"  />
@@ -105,13 +136,13 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { ref, watch, computed } from 'vue'
+import { Search, Plus, User, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 export default {
   name: 'DashboardManageUser',
-  components: { Search, Plus },
+  components: { Search, Plus, User, UserFilled },
   props: {
     users: { type: Array, default: () => [] },
     currentUser: { type: String, default: '' }
@@ -119,6 +150,7 @@ export default {
   setup(props, { emit }) {
     const searchKeyword = ref('')
     const roleFilter = ref('')
+    const tableKey = ref(0)
     const dialogVisible = ref(false)
     const isEditMode = ref(false)
     const userForm = ref({
@@ -130,6 +162,19 @@ export default {
     })
     const filteredUsers = ref([...props.users])
 
+    const totalUsers = computed(() => {
+      return props.users.filter(u => u.role === '用户').length
+    })
+
+    const totalAdmins = computed(() => {
+      return props.users.filter(u => u.role === '管理员').length
+    })
+
+    const filterByRole = (role) => {
+      roleFilter.value = role
+      filterUsers()
+    }
+
     const filterUsers = () => {
       filteredUsers.value = props.users.filter(user => {
         const matchSearch = searchKeyword.value === '' ||
@@ -139,6 +184,7 @@ export default {
           user.role === roleFilter.value
         return matchSearch && matchRole
       })
+      tableKey.value++
     }
 
     const handleSearchClear = () => {
@@ -238,12 +284,16 @@ export default {
     return {
       searchKeyword,
       roleFilter,
+      tableKey,
       dialogVisible,
       isEditMode,
       userForm,
       filteredUsers,
+      totalUsers,
+      totalAdmins,
       handleSearchClear,
       handleRoleChange,
+      filterByRole,
       showAddDialog,
       showEditDialog,
       handleSave,
@@ -260,6 +310,97 @@ export default {
 .page-content h2 {
   margin: 0 0 20px 0;
   color: #303133;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  overflow: hidden;
+  position: relative;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--card-gradient-from), var(--card-gradient-to));
+  opacity: 0.8;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--card-border-hover);
+}
+
+.stat-card.user-card {
+  --card-gradient-from: #667eea;
+  --card-gradient-to: #764ba2;
+  --card-border-hover: #667eea;
+}
+
+.stat-card.admin-card {
+  --card-gradient-from: #f093fb;
+  --card-gradient-to: #f5576c;
+  --card-border-hover: #f093fb;
+}
+
+.stat-card-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.stat-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--card-gradient-from), var(--card-gradient-to));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.stat-icon {
+  font-size: 32px;
+  color: #fff;
+}
+
+.stat-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #303133;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #909399;
+  font-weight: 500;
 }
 
 .filter-bar {
