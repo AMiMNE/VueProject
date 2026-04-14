@@ -34,7 +34,7 @@
           :key="cat.id"
           :label="cat.id"
         >
-          <el-icon><component :is="cat.icon" /></el-icon>
+          <el-icon><component :is="getIconComponent(cat.icon)" /></el-icon>
           {{ cat.name }}
         </el-radio-button>
       </el-radio-group>
@@ -75,8 +75,8 @@
             <div v-else class="image-placeholder">
               <el-icon><Goods /></el-icon>
             </div>
-            <div v-if="product.discount < 1" class="discount-tag">
-              {{ Math.round(product.discount * 10) }}折
+            <div v-if="product.discount < 0.99" class="discount-tag">
+              {{ (product.discount * 10).toFixed(1) }}折
             </div>
           </div>
           <div class="product-info">
@@ -84,7 +84,7 @@
             <p class="product-desc">{{ product.description }}</p>
             <div class="product-price">
               <span class="current-price">¥{{ (product.price * product.discount).toFixed(2) }}</span>
-              <span v-if="product.discount < 1" class="original-price">¥{{ product.price.toFixed(2) }}</span>
+              <span v-if="product.discount < 0.99" class="original-price">¥{{ product.price.toFixed(2) }}</span>
             </div>
             <div class="product-tags">
               <el-tag v-for="tag in product.tags" :key="tag" size="small" type="info">{{ tag }}</el-tag>
@@ -123,8 +123,8 @@
             <div v-else class="image-placeholder">
               <el-icon><Goods /></el-icon>
             </div>
-            <div v-if="product.discount < 1" class="discount-tag">
-              {{ Math.round(product.discount * 10) }}折
+            <div v-if="product.discount < 0.99" class="discount-tag">
+              {{ (product.discount * 10).toFixed(1) }}折
             </div>
           </div>
           <div class="product-info">
@@ -168,10 +168,16 @@ import {
   Star,
   Goods,
   Plus,
-  ChatDotRound
+  ChatDotRound,
+  Coffee,
+  Sugar,
+  Apple,
+  MilkTea,
+  Food
 } from '@element-plus/icons-vue'
-import { categories, products, hotProducts, getProductsByCategory } from '@/data/products.js'
+import { categories, products as productsData, hotProducts, getProductsByCategory } from '@/data/products.js'
 import BannerCartoonCharacter from '@/components/BannerCartoonCharacter.vue'
+import { shallowRef, triggerRef } from 'vue'
 
 export default {
   name: 'UserHome',
@@ -183,6 +189,11 @@ export default {
     Goods,
     Plus,
     ChatDotRound,
+    Coffee,
+    Sugar,
+    Apple,
+    MilkTea,
+    Food,
     BannerCartoonCharacter
   },
   props: {
@@ -197,6 +208,28 @@ export default {
     const searchKeyword = ref('')
     const priceRange = ref([0, 50])
     const selectedTags = ref([])
+    
+    // 使用 shallowRef 引用产品数据，使其响应式
+    const products = shallowRef(productsData)
+
+    // 图标映射表：将分类图标名称映射到对应的组件
+    const iconMap = {
+      'Coffee': Coffee,
+      'Sugar': Sugar,
+      'Goods': Goods,
+      'Apple': Apple,
+      'MilkTea': MilkTea,
+      'Food': Food
+    }
+
+    /**
+     * 获取图标组件
+     * @param {string} iconName - 图标名称
+     * @returns {Component} 图标组件
+     */
+    const getIconComponent = (iconName) => {
+      return iconMap[iconName] || Goods
+    }
 
     const activeBannerIndex = ref(0)
     const bannerHoverStates = ref([false, false, false, false])
@@ -265,7 +298,12 @@ export default {
     })
 
     const filteredProducts = computed(() => {
-      let result = getProductsByCategory(activeCategory.value)
+      let result = products.value
+      
+      // 分类筛选
+      if (activeCategory.value !== 'all') {
+        result = result.filter(p => p.category === activeCategory.value)
+      }
 
       // 只显示上架的商品
       result = result.filter(p => p.status === 'onshelf')
@@ -323,6 +361,7 @@ export default {
       activeFilterCount,
       currentCategoryName,
       filteredProducts,
+      getIconComponent,
       handleImageError,
       addToCart,
       askAI,

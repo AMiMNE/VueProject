@@ -1,9 +1,20 @@
+<!--
+ * @Description: 订单管理页面 - 管理订单状态、查看订单详情、发货等功能
+ * @Author: Admin
+ * @Date: 2026-04-12
+-->
+
 <template>
+  <!-- 页面主体容器 -->
   <div class="page-content">
+    <!-- 页面头部：包含标题 -->
     <div class="page-header">
       <h2>订单管理</h2>
     </div>
+    
+    <!-- 筛选栏：搜索、状态、日期、催单筛选 -->
     <div class="filter-bar">
+      <!-- 订单号搜索 -->
       <div class="filter-item">
         <label>搜索：</label>
         <el-input
@@ -17,6 +28,8 @@
           </template>
         </el-input>
       </div>
+      
+      <!-- 订单状态选择 -->
       <div class="filter-item">
         <label>状态：</label>
         <el-select
@@ -32,6 +45,8 @@
           <el-option label="已取消" value="已取消" />
         </el-select>
       </div>
+      
+      <!-- 日期选择 -->
       <div class="filter-item">
         <label>日期：</label>
         <el-date-picker
@@ -42,6 +57,8 @@
           @change="handleOrderDateChange"
         />
       </div>
+      
+      <!-- 催单状态筛选 -->
       <div class="filter-item">
         <label>催单：</label>
         <el-select
@@ -56,11 +73,13 @@
         </el-select>
       </div>
     </div>
-
+    
+    <!-- 排序栏：订单号和日期的升序/降序排列 -->
     <div class="sort-bar">
       <div class="sort-item">
         <label>排序：</label>
         <div class="sort-buttons">
+          <!-- 订单号升序 -->
           <div 
             class="sort-button"
             :class="{ active: sortOption === 'id-asc' }"
@@ -68,6 +87,7 @@
           >
             <span class="sort-text">订单号升序</span>
           </div>
+          <!-- 订单号降序 -->
           <div 
             class="sort-button"
             :class="{ active: sortOption === 'id-desc' }"
@@ -75,6 +95,7 @@
           >
             <span class="sort-text">订单号降序</span>
           </div>
+          <!-- 日期升序 -->
           <div 
             class="sort-button"
             :class="{ active: sortOption === 'date-asc' }"
@@ -82,6 +103,7 @@
           >
             <span class="sort-text">日期升序</span>
           </div>
+          <!-- 日期降序 -->
           <div 
             class="sort-button"
             :class="{ active: sortOption === 'date-desc' }"
@@ -92,12 +114,16 @@
         </div>
       </div>
     </div>
-
+    
+    <!-- 主要内容区域：订单表格 + 日期筛选抽屉 -->
     <div class="main-content">
+      <!-- 表格容器 -->
       <div class="table-wrapper">
+        <!-- 订单列表表格 -->
         <el-table :data="paginatedOrders" style="width: 100%" class="rounded-table">
           <el-table-column prop="id" label="订单号" width="150" />
           <el-table-column prop="customer" label="客户" width="120" />
+          <!-- 订单状态列 -->
           <el-table-column prop="status" label="状态" width="120">
             <template #default="scope">
               <el-tag :type="getStatusType(scope.row.status)">
@@ -105,6 +131,7 @@
               </el-tag>
             </template>
           </el-table-column>
+          <!-- 催单信息列 -->
           <el-table-column label="催单" width="120">
             <template #default="scope">
               <el-tag v-if="scope.row.urgentCount > 0" type="danger">
@@ -114,9 +141,11 @@
             </template>
           </el-table-column>
           <el-table-column prop="date" label="日期" width="120" />
+          <!-- 操作列 -->
           <el-table-column label="操作" width="160">
             <template #default="scope">
               <el-button size="small" @click="showOrderDetail(scope.row)">查看</el-button>
+              <!-- 仅待发货订单显示发货按钮 -->
               <el-button
                 v-if="scope.row.status === '待发货'"
                 size="small"
@@ -128,7 +157,8 @@
             </template>
           </el-table-column>
         </el-table>
-
+        
+        <!-- 分页器 -->
         <div class="pagination-container">
           <el-pagination
             v-model:current-page="currentPage"
@@ -141,10 +171,12 @@
           />
         </div>
       </div>
-
+      
+      <!-- 右侧日期筛选抽屉 -->
       <div class="date-drawer">
         <h3 class="date-drawer-title">日期筛选</h3>
         <div class="date-drawer-content">
+          <!-- 全部订单 -->
           <div 
             class="date-drawer-item" 
             :class="{ active: dateFilter === '' }"
@@ -152,6 +184,7 @@
           >
             <span class="date-drawer-text">全部</span>
           </div>
+          <!-- 最近三天订单 -->
           <div 
             class="date-drawer-item"
             :class="{ active: dateFilter === '3days' }"
@@ -159,6 +192,7 @@
           >
             <span class="date-drawer-text">最近三天</span>
           </div>
+          <!-- 最近一周订单 -->
           <div 
             class="date-drawer-item"
             :class="{ active: dateFilter === '1week' }"
@@ -166,6 +200,7 @@
           >
             <span class="date-drawer-text">最近一周</span>
           </div>
+          <!-- 近三个月订单 -->
           <div 
             class="date-drawer-item"
             :class="{ active: dateFilter === '3months' }"
@@ -239,49 +274,78 @@
 </template>
 
 <script>
+/**
+ * 订单管理页面组件
+ * 功能：订单列表展示、筛选、排序、发货、查看详情
+ */
 import { ref, watch } from 'vue'
+// 导入 Element Plus 图标
 import { Search } from '@element-plus/icons-vue'
+// 导入 Element Plus 消息提示
 import { ElMessage } from 'element-plus'
+// 导入订单状态更新工具函数
 import { updateOrderStatus } from '@/data/orders.js'
 
 export default {
   name: 'DashboardOrder',
+  // 注册组件
   components: { Search },
+  // 组件属性：接收订单列表
   props: {
     orders: { type: Array, default: () => [] }
   },
+  // 组件事件：订单更新时通知父组件
   emits: ['orderUpdated'],
   setup(props, { emit }) {
-    const orderSearch = ref('')
-    const orderStatus = ref('')
-    const orderDate = ref(null)
-    const orderUrgent = ref('')
-    const dateFilter = ref('')
-    const sortOption = ref('')
+    // ========== 响应式数据定义 ==========
+    
+    // 筛选条件
+    const orderSearch = ref('')        // 搜索关键词（订单号/客户名）
+    const orderStatus = ref('')        // 订单状态筛选
+    const orderDate = ref(null)        // 指定日期筛选
+    const orderUrgent = ref('')        // 催单状态筛选
+    const dateFilter = ref('')         // 快捷日期范围筛选
+    const sortOption = ref('')         // 排序选项
+    
+    // 筛选后的订单列表
     const filteredOrders = ref([...props.orders])
-    const detailDialogVisible = ref(false)
-    const currentOrder = ref(null)
-    const detailLoading = ref(false)
-    const loadingPercentage = ref(false)
-    let loadingTimer = null
+    
+    // 订单详情相关
+    const detailDialogVisible = ref(false)  // 详情对话框显示状态
+    const currentOrder = ref(null)          // 当前查看的订单
+    const detailLoading = ref(false)        // 详情加载状态
+    const loadingPercentage = ref(false)    // 加载进度百分比
+    let loadingTimer = null                 // 加载定时器
+    
+    // ========== 分页相关 ==========
+    const currentPage = ref(1)         // 当前页码
+    const pageSize = ref(5)            // 每页显示条数
+    const paginatedOrders = ref([])    // 当前页的订单数据
 
-    // 分页相关
-    const currentPage = ref(1)
-    const pageSize = ref(5)
-    const paginatedOrders = ref([])
-
+    /**
+     * 更新分页数据
+     * 根据当前页码和每页条数截取 filteredOrders 的数据
+     */
     const updatePaginatedOrders = () => {
       const start = (currentPage.value - 1) * pageSize.value
       const end = start + pageSize.value
       paginatedOrders.value = filteredOrders.value.slice(start, end)
     }
 
+    /**
+     * 处理每页条数变化
+     * @param {number} val - 新的每页条数
+     */
     const handleSizeChange = (val) => {
       pageSize.value = val
-      currentPage.value = 1
+      currentPage.value = 1  // 重置到第一页
       updatePaginatedOrders()
     }
 
+    /**
+     * 处理页码变化
+     * @param {number} val - 新的页码
+     */
     const handleCurrentChange = (val) => {
       currentPage.value = val
       updatePaginatedOrders()

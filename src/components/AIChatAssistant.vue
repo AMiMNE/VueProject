@@ -231,6 +231,14 @@ defineExpose({
   z-index: 1000;
 }
 
+/* 响应式定位：确保在小屏幕上也能看到 */
+@media (max-height: 700px) {
+  .ai-chat-container {
+    bottom: 15px;
+    right: 15px;
+  }
+}
+
 .chat-toggle-btn {
   width: 60px;
   height: 60px;
@@ -256,6 +264,7 @@ defineExpose({
   bottom: 75px;
   right: 0;
   width: 420px;
+  max-height: calc(100vh - 150px); /* 最大高度为视口高度减去底部和顶部安全距离 */
   height: 600px;
   background: white;
   border-radius: 20px;
@@ -264,6 +273,31 @@ defineExpose({
   flex-direction: column;
   overflow: hidden;
   animation: slideUp 0.3s ease;
+}
+
+/* 响应式调整：小屏幕适配 */
+@media (max-height: 768px) {
+  .chat-window {
+    bottom: 70px;
+    max-height: calc(100vh - 120px);
+    height: calc(100vh - 120px);
+  }
+}
+
+@media (max-height: 600px) {
+  .chat-window {
+    bottom: 65px;
+    max-height: calc(100vh - 100px);
+    height: calc(100vh - 100px);
+  }
+}
+
+/* 响应式调整：小屏幕宽度适配 */
+@media (max-width: 768px) {
+  .chat-window {
+    width: calc(100vw - 40px);
+    right: 20px;
+  }
 }
 
 @keyframes slideUp {
@@ -331,6 +365,25 @@ defineExpose({
   padding: 16px;
   overflow-y: auto;
   background: #f8f9fa;
+  min-height: 0; /* 重要：确保 flex 子项能正确滚动 */
+}
+
+/* 自定义滚动条样式 */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
 }
 
 .message-item {
