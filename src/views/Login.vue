@@ -49,7 +49,7 @@
             <el-input 
               v-model="formData.username" 
               placeholder="请输入用户名"
-              prefix-icon="User"
+              :prefix-icon="User"
               size="large"
             />
           </el-form-item>
@@ -59,7 +59,7 @@
               :type="showPassword ? 'text' : 'password'" 
               v-model="formData.password" 
               placeholder="请输入密码"
-              prefix-icon="Lock"
+              :prefix-icon="Lock"
               size="large"
               @input="handlePasswordInput"
             >
@@ -103,6 +103,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { User, Lock } from '@element-plus/icons-vue'
 import { validateUser } from '@/data/users.js'
 
 const router = useRouter()

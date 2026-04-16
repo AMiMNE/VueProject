@@ -256,7 +256,10 @@ export default {
 /* ==================== 页面容器 ==================== */
 .messages-page {
   height: 100%;
-  background: #f5f7fa;
+  background: #ffffff;
+  border:6px solid #9dd1df;
+  border-radius: 20px;
+  
 }
 
 /* 消息主容器：左右分栏布局 */
@@ -264,7 +267,7 @@ export default {
   display: flex;
   height: calc(100vh - 120px);
   background: #fff;
-  border-radius: 8px;
+  border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
