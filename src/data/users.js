@@ -17,6 +17,10 @@ const defaultUsers = [
   { id: 'U009', username: 'wujiu', password: 'Wujiu123', phone: '13000130000', role: 'user', status: '正常' },
   { id: 'U010', username: 'shiyi', password: 'Shiyi123', phone: '12900129000', role: 'user', status: '正常' },
   { id: 'U011', username: 'cheems', password: '114514', phone: '12800128000', role: 'user', status: '正常' },
+  { id: 'U012', username: 'zhengshi', password: 'Zhengshi123', phone: '12700127000', role: 'user', status: '正常' },
+  { id: 'U013', username: 'user001', password: 'User001123', phone: '12600126000', role: 'user', status: '正常' },
+  { id: 'U014', username: 'user002', password: 'User002123', phone: '12500125000', role: 'user', status: '正常' },
+  { id: 'U015', username: 'user003', password: 'User003123', phone: '12400124000', role: 'user', status: '正常' },
 
 ]
 
