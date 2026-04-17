@@ -232,7 +232,9 @@
         </el-descriptions-item>
         <el-descriptions-item label="下单日期">{{ currentOrder.date }}</el-descriptions-item>
         <el-descriptions-item label="商品数量">{{ currentOrder.itemCount }} 件</el-descriptions-item>
+        <el-descriptions-item label="客户 ID">{{ currentOrder.customerId }}</el-descriptions-item>
         <el-descriptions-item label="订单金额" :span="2">
+          
           <span style="color: #f56c6c; font-size: 18px; font-weight: bold;">
             ¥{{ currentOrder.totalAmount }}
           </span>

@@ -21,11 +21,30 @@ const formatDateTime = (date) => {
   return date.toISOString()
 }
 
+// 用户名到用户 ID 的映射（非管理员用户）
+const userMapping = {
+  'user': 'U001',
+  'zhangsan': 'U003',
+  'lisi': 'U004',
+  'wangwu': 'U005',
+  'zhaoliu': 'U006',
+  'sunqi': 'U007',
+  'zhouba': 'U008',
+  'wujiu': 'U009',
+  'shiyi': 'U010',
+  'cheems': 'U011',
+  'zhengshi': 'U012',
+  'user001': 'U013',
+  'user002': 'U014',
+  'user003': 'U015'
+}
+
 const defaultOrders = [
   // 最近三天的订单
   {
     id: 'ORD001',
     username: 'zhangsan',
+    customerId: 'U003',
     customer: '张三',
     items: [
       { productId: 'P001', name: '农夫山泉', price: 2.00, discount: 1, quantity: 50, unit: '瓶', subtotal: '100.00' },
@@ -43,6 +62,7 @@ const defaultOrders = [
   {
     id: 'ORD002',
     username: 'lisi',
+    customerId: 'U004',
     customer: '李四',
     items: [
       { productId: 'P005', name: '乐事薯片', price: 6.50, discount: 1, quantity: 10, unit: '袋', subtotal: '65.00' },
@@ -60,6 +80,7 @@ const defaultOrders = [
   {
     id: 'ORD003',
     username: 'wangwu',
+    customerId: 'U005',
     customer: '王五',
     items: [
       { productId: 'P011', name: '新鲜鸡蛋', price: 15.00, discount: 1, quantity: 10, unit: '盒', subtotal: '150.00' },
@@ -78,6 +99,7 @@ const defaultOrders = [
   {
     id: 'ORD004',
     username: 'zhaoliu',
+    customerId: 'U006',
     customer: '赵六',
     items: [
       { productId: 'P003', name: '康师傅冰红茶', price: 3.50, discount: 1, quantity: 24, unit: '瓶', subtotal: '84.00' },
@@ -95,6 +117,7 @@ const defaultOrders = [
   {
     id: 'ORD005',
     username: 'sunqi',
+    customerId: 'U007',
     customer: '孙七',
     items: [
       { productId: 'P006', name: '奥利奥饼干', price: 8.00, discount: 1, quantity: 15, unit: '盒', subtotal: '120.00' },
@@ -112,6 +135,7 @@ const defaultOrders = [
   {
     id: 'ORD006',
     username: 'zhouba',
+    customerId: 'U008',
     customer: '周八',
     items: [
       { productId: 'P008', name: '德芙巧克力', price: 25.00, discount: 1, quantity: 8, unit: '盒', subtotal: '200.00' }
@@ -128,7 +152,8 @@ const defaultOrders = [
   // 最近三个月的订单（8-90 天前）
   {
     id: 'ORD007',
-    username: 'jiuwu',
+    username: 'wujiu',
+    customerId: 'U009',
     customer: '吴九',
     items: [
       { productId: 'P009', name: '士力架', price: 5.00, discount: 1, quantity: 50, unit: '根', subtotal: '250.00' },
@@ -146,6 +171,7 @@ const defaultOrders = [
   {
     id: 'ORD008',
     username: 'zhengshi',
+    customerId: 'U012',
     customer: '郑十',
     items: [
       { productId: 'P014', name: '蒙牛纯牛奶', price: 55.00, discount: 0.95, quantity: 2, unit: '箱', subtotal: '104.50' },
@@ -162,8 +188,9 @@ const defaultOrders = [
   },
   {
     id: 'ORD009',
-    username: 'admin',
-    customer: '管理员',
+    username: 'cheems',
+    customerId: 'U011',
+    customer: 'cheems',
     items: [
       { productId: 'P016', name: '金龙鱼食用油', price: 68.00, discount: 1, quantity: 5, unit: '桶', subtotal: '340.00' },
       { productId: 'P017', name: '海天酱油', price: 12.00, discount: 1, quantity: 10, unit: '瓶', subtotal: '120.00' }
@@ -180,6 +207,7 @@ const defaultOrders = [
   {
     id: 'ORD010',
     username: 'user001',
+    customerId: 'U013',
     customer: '用户一',
     items: [
       { productId: 'P018', name: '五常大米', price: 88.00, discount: 0.9, quantity: 2, unit: '袋', subtotal: '158.40' }
@@ -196,6 +224,7 @@ const defaultOrders = [
   {
     id: 'ORD011',
     username: 'user002',
+    customerId: 'U014',
     customer: '用户二',
     items: [
       { productId: 'P019', name: '鲁花花生油', price: 159.00, discount: 1, quantity: 1, unit: '桶', subtotal: '159.00' },
@@ -213,6 +242,7 @@ const defaultOrders = [
   {
     id: 'ORD012',
     username: 'user003',
+    customerId: 'U015',
     customer: '用户三',
     items: [
       { productId: 'P001', name: '农夫山泉', price: 2.00, discount: 1, quantity: 100, unit: '瓶', subtotal: '200.00' }
@@ -275,9 +305,13 @@ export const getOrdersByUsername = (username) => {
 export const createOrder = (cartItems, totalAmount, username) => {
   const orders = getOrders()
   
+  // 根据用户名查找用户 ID
+  const customerId = userMapping[username] || 'U999'
+  
   const newOrder = {
     id: generateOrderId(),
     username: username,
+    customerId: customerId,
     customer: username,
     items: cartItems.map(item => ({
       productId: item.id,

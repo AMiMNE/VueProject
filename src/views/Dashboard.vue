@@ -306,7 +306,7 @@ export default {
 
 /* ==================== 顶部栏样式 ==================== */
 .header {
-  background-color: #fff;
+  background-color: #304156;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   display: flex;
   justify-content: space-between;
@@ -330,6 +330,7 @@ export default {
   cursor: pointer;
   gap: 8px;
   font-size: 14px;
+  color: #fff;
 }
 
 .main-content {
