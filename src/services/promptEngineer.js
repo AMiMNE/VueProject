@@ -1,6 +1,7 @@
-import { products, categories } from '@/data/products.js'
+import { getProducts, categories } from '@/data/products.js'
 
 export function buildSystemPrompt() {
+  const products = getProducts()
   const categoriesInfo = categories.map(cat => 
     `- ${cat.name} (id: ${cat.id})`
   ).join('\n')
@@ -63,6 +64,7 @@ export function buildUserPromptWithContext(userMessage, conversationHistory = []
 }
 
 export function parseLLMResponse(llmText) {
+  const products = getProducts()
   let productList = null
   let productDetail = null
 

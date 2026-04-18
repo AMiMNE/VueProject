@@ -1,30 +1,30 @@
-import { products, categories } from '@/data/products.js'
-import { LLM_CONFIG, isLLMEnabled } from '@/config/llmConfig.js'
+import { getProducts, categories } from '@/data/products.js'
+import { LLM_CONFIG, isLLMEnabled, getAPIType } from '@/config/llmConfig.js'
 import { buildSystemPrompt, buildUserPromptWithContext, parseLLMResponse } from '@/services/promptEngineer.js'
 
 const knowledgeBase = {
-  products,
+  get products() { return getProducts() },
   categories,
   
   getProductByName(name) {
     const keyword = name.toLowerCase()
-    return products.find(p => 
+    return getProducts().find(p => 
       p.name.toLowerCase().includes(keyword) ||
       p.tags.some(tag => tag.toLowerCase().includes(keyword))
     )
   },
   
   getProductsByCategory(categoryId) {
-    return products.filter(p => p.category === categoryId)
+    return getProducts().filter(p => p.category === categoryId)
   },
   
   getHotProducts() {
-    return products.filter(p => p.isHot)
+    return getProducts().filter(p => p.isHot)
   },
   
   searchProducts(keyword) {
     const lowerKeyword = keyword.toLowerCase()
-    return products.filter(p =>
+    return getProducts().filter(p =>
       p.name.toLowerCase().includes(lowerKeyword) ||
       p.description.toLowerCase().includes(lowerKeyword) ||
       p.tags.some(tag => tag.toLowerCase().includes(lowerKeyword))
@@ -108,7 +108,7 @@ const intentRecognizer = {
   },
   
   isProductQuery(message) {
-    for (const product of products) {
+    for (const product of getProducts()) {
       if (message.includes(product.name)) {
         return product
       }
@@ -138,7 +138,88 @@ function formatProductList(productList) {
   return productList.map((p, i) => `${i + 1}. ${p.name} - ¥${(p.price * p.discount).toFixed(2)}`).join('\n')
 }
 
-async function callLLMAPI(userMessage, conversationHistory = []) {
+async function callMinimaxAPI(userMessage, conversationHistory = []) {
+  try {
+    const systemPrompt = buildSystemPrompt()
+    const userPrompt = buildUserPromptWithContext(userMessage, conversationHistory)
+
+    // Minimax API 需要将 Group ID 作为 URL 参数
+    const groupId = LLM_CONFIG.groupId
+    let apiUrl = LLM_CONFIG.apiUrl
+    if (groupId && !apiUrl.includes('GroupId')) {
+      apiUrl = apiUrl + (apiUrl.includes('?') ? '&' : '?') + `GroupId=${groupId}`
+    }
+
+    console.log('调用 Minimax API:', apiUrl)
+
+    // 构建 Minimax 格式的消息
+    const messages = [
+      { role: 'system', content: systemPrompt, name: 'MM智能助理' },
+      ...conversationHistory.map(msg => ({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content,
+        name: msg.role === 'assistant' ? 'MM智能助理' : '用户'
+      })),
+      { role: 'user', content: userPrompt, name: '用户' }
+    ]
+
+    const requestBody = {
+      model: LLM_CONFIG.model,
+      messages: messages
+    }
+
+    // 只有设置了 temperature 和 max_tokens 才添加
+    if (LLM_CONFIG.temperature !== undefined) {
+      requestBody.temperature = LLM_CONFIG.temperature
+    }
+    if (LLM_CONFIG.maxTokens !== undefined) {
+      requestBody.max_tokens = LLM_CONFIG.maxTokens
+    }
+
+    console.log('请求体:', JSON.stringify(requestBody, null, 2))
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${LLM_CONFIG.apiKey}`
+      },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(LLM_CONFIG.timeout)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('API 错误响应:', errorData)
+      throw new Error(`API请求失败: ${response.status} - ${errorData.message || errorData.base_resp?.message || '未知错误'}`)
+    }
+
+    const data = await response.json()
+    console.log('API 响应:', data)
+
+    // Minimax 返回格式处理
+    let llmText = ''
+    if (data.choices && data.choices[0]?.message?.content) {
+      llmText = data.choices[0].message.content
+    } else if (data.base_resp?.data?.choices?.[0]?.message?.content) {
+      llmText = data.base_resp.data.choices[0].message.content
+    } else if (data.reply) {
+      llmText = data.reply
+    }
+
+    if (!llmText) {
+      console.warn('无法解析 API 响应:', data)
+      throw new Error('API 返回数据格式异常')
+    }
+
+    return parseLLMResponse(llmText)
+  } catch (error) {
+    console.error('Minimax API调用失败:', error)
+    throw error
+  }
+}
+
+async function callOpenAIAPI(userMessage, conversationHistory = []) {
   try {
     const systemPrompt = buildSystemPrompt()
     const userPrompt = buildUserPromptWithContext(userMessage, conversationHistory)
@@ -153,6 +234,7 @@ async function callLLMAPI(userMessage, conversationHistory = []) {
         model: LLM_CONFIG.model,
         messages: [
           { role: 'system', content: systemPrompt },
+          ...conversationHistory,
           { role: 'user', content: userPrompt }
         ],
         temperature: LLM_CONFIG.temperature,
@@ -167,11 +249,21 @@ async function callLLMAPI(userMessage, conversationHistory = []) {
 
     const data = await response.json()
     const llmText = data.choices[0]?.message?.content || ''
-    
+
     return parseLLMResponse(llmText)
   } catch (error) {
-    console.error('LLM API调用失败:', error)
+    console.error('OpenAI API调用失败:', error)
     throw error
+  }
+}
+
+async function callLLMAPI(userMessage, conversationHistory = []) {
+  const apiType = getAPIType()
+
+  if (apiType === 'minimax') {
+    return await callMinimaxAPI(userMessage, conversationHistory)
+  } else {
+    return await callOpenAIAPI(userMessage, conversationHistory)
   }
 }
 

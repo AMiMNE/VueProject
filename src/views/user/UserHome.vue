@@ -92,10 +92,6 @@
           </div>
           <div class="product-action">
             <div class="action-buttons">
-              <el-button type="info" size="small" @click.stop="askAI(product, $event)">
-                <el-icon><ChatDotRound /></el-icon>
-                问AI
-              </el-button>
               <el-button type="primary" size="small" @click.stop="addToCart(product)">
                 <el-icon><Plus /></el-icon>
                 加入购物车
@@ -141,10 +137,6 @@
           </div>
           <div class="product-action">
             <div class="action-buttons">
-              <el-button type="info" size="small" @click.stop="askAI(product, $event)">
-                <el-icon><ChatDotRound /></el-icon>
-                问AI
-              </el-button>
               <el-button type="primary" size="small" @click.stop="addToCart(product)">
                 <el-icon><Plus /></el-icon>
                 加入购物车
@@ -168,14 +160,13 @@ import {
   Star,
   Goods,
   Plus,
-  ChatDotRound,
   Coffee,
   Sugar,
   Apple,
   MilkTea,
   Food
 } from '@element-plus/icons-vue'
-import { categories, products as productsData, hotProducts, getProductsByCategory } from '@/data/products.js'
+import { categories, getProducts, getHotProducts, getProductsByCategory } from '@/data/products.js'
 import BannerCartoonCharacter from '@/components/BannerCartoonCharacter.vue'
 import { shallowRef, triggerRef } from 'vue'
 
@@ -188,7 +179,6 @@ export default {
     Star,
     Goods,
     Plus,
-    ChatDotRound,
     Coffee,
     Sugar,
     Apple,
@@ -202,15 +192,16 @@ export default {
       default: 0
     }
   },
-  emits: ['openCart', 'addToCart', 'askAI'],
+  emits: ['openCart', 'addToCart'],
   setup(props, { emit }) {
     const activeCategory = ref('all')
     const searchKeyword = ref('')
     const priceRange = ref([0, 50])
     const selectedTags = ref([])
     
-    // 使用 shallowRef 引用产品数据，使其响应式
-    const products = shallowRef(productsData)
+    const products = shallowRef(getProducts())
+
+    const hotProducts = getHotProducts()
 
     // 图标映射表：将分类图标名称映射到对应的组件
     const iconMap = {
@@ -340,11 +331,6 @@ export default {
       emit('addToCart', product)
     }
 
-    const askAI = (product, event) => {
-      event.stopPropagation()
-      emit('askAI', product)
-    }
-
     return {
       categories,
       products,
@@ -364,7 +350,6 @@ export default {
       getIconComponent,
       handleImageError,
       addToCart,
-      askAI,
       handleBannerChange,
       handleBannerMouseEnter,
       handleBannerMouseLeave

@@ -331,6 +331,29 @@
         <el-form-item label="商品名称" required>
           <el-input v-model="newProductForm.name" placeholder="请输入商品名称" />
         </el-form-item>
+        <el-form-item label="商品图片">
+          <div class="image-upload-wrapper">
+            <el-upload
+              v-if="!newProductForm.imageBase64"
+              :auto-upload="false"
+              :show-file-list="false"
+              :on-change="handleImageUpload"
+              accept="image/*"
+              class="image-uploader"
+            >
+              <div class="upload-placeholder">
+                <el-icon class="upload-icon"><Upload /></el-icon>
+                <span class="upload-text">点击上传图片</span>
+              </div>
+            </el-upload>
+            <div v-else class="image-preview">
+              <img :src="newProductForm.imageBase64" alt="商品图片预览" />
+              <div class="image-preview-overlay" @click="removeImage">
+                <el-icon><DeleteFilled /></el-icon>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
         <el-form-item label="商品分类" required>
           <el-select v-model="newProductForm.category" placeholder="请选择分类" style="width: 100%">
             <el-option
@@ -382,11 +405,8 @@
  * 功能：商品列表展示、筛选、上下架管理、添加新商品
  */
 import { ref, computed, shallowRef, triggerRef } from 'vue'
-// 导入 Element Plus 图标组件
-import { Goods, Search, Grid, List, CircleCheckFilled, UploadFilled, DeleteFilled, Coffee, Sugar, Apple, MilkTea, Food, Plus, Discount } from '@element-plus/icons-vue'
-// 导入产品数据和分类数据
-import { products as productsData, categories as categoriesData } from '../../data/products'
-// 导入 Element Plus 消息提示组件
+import { Goods, Search, Grid, List, CircleCheckFilled, UploadFilled, DeleteFilled, Coffee, Sugar, Apple, MilkTea, Food, Plus, Discount, Upload, PictureFilled } from '@element-plus/icons-vue'
+import { getProducts as loadProducts, addProduct as addProductData, updateProduct as updateProductData, saveProducts as persistProducts, categories as categoriesData } from '../../data/products'
 import { ElMessage } from 'element-plus'
 
 export default {
@@ -395,14 +415,10 @@ export default {
   components: { 
     Goods, Search, Grid, List, 
     CircleCheckFilled, UploadFilled, DeleteFilled,
-    Coffee, Sugar, Apple, MilkTea, Food, Plus, Discount
+    Coffee, Sugar, Apple, MilkTea, Food, Plus, Discount, Upload, PictureFilled
   },
   setup() {
-    // ========== 响应式数据定义 ==========
-    
-    // 产品列表（使用 shallowRef 避免深度响应式，提高性能）
-    const products = shallowRef(productsData)
-    // 分类列表
+    const products = shallowRef(loadProducts())
     const categories = categoriesData
     
     // 筛选条件
@@ -505,7 +521,8 @@ export default {
      */
     const toggleProductStatus = (product, newStatus) => {
       product.status = newStatus
-      triggerRef(products)  // 手动触发响应式更新
+      updateProductData(product.id, { status: newStatus })
+      triggerRef(products)
     }
 
     /**
@@ -515,14 +532,13 @@ export default {
     const batchShelf = async (status) => {
       batchLoading.value = true
       
-      // 模拟加载延迟，提升用户体验
       await new Promise(resolve => setTimeout(resolve, 500))
       
-      // 遍历所有产品，设置新状态
       products.value.forEach(product => {
         product.status = status
       })
-      triggerRef(products)  // 手动触发响应式更新
+      persistProducts(products.value)
+      triggerRef(products)
       
       batchLoading.value = false
     }
@@ -543,7 +559,6 @@ export default {
      * 显示添加商品对话框，并重置表单
      */
     const showAddProductDialog = () => {
-      // 重置表单为空
       newProductForm.value = {
         id: '',
         name: '',
@@ -554,9 +569,23 @@ export default {
         description: '',
         barCode: '',
         tagsInput: '',
-        onshelf: true
+        onshelf: true,
+        imageBase64: ''
       }
       addProductDialogVisible.value = true
+    }
+
+    const handleImageUpload = (uploadFile) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        newProductForm.value.imageBase64 = e.target.result
+      }
+      reader.readAsDataURL(uploadFile.raw)
+      return false
+    }
+
+    const removeImage = () => {
+      newProductForm.value.imageBase64 = ''
     }
 
     /**
@@ -564,18 +593,15 @@ export default {
      * 验证表单 -> 创建新产品 -> 添加到数据源
      */
     const handleAddProduct = () => {
-      // 必填项验证
       if (!newProductForm.value.id || !newProductForm.value.name || !newProductForm.value.category) {
         ElMessage.warning('请填写商品 ID、商品名称和分类')
         return
       }
 
-      // 处理标签：将逗号/顿号分隔的字符串转为数组
       const tags = newProductForm.value.tagsInput
         ? newProductForm.value.tagsInput.split(/[,,]/).map(t => t.trim()).filter(t => t)
         : []
 
-      // 构建新产品对象
       const newProduct = {
         id: newProductForm.value.id,
         name: newProductForm.value.name,
@@ -583,17 +609,22 @@ export default {
         price: newProductForm.value.price,
         unit: newProductForm.value.unit,
         stock: newProductForm.value.stock,
-        image: '',  // 默认空图片
+        image: newProductForm.value.imageBase64 || '',
         description: newProductForm.value.description,
         barCode: newProductForm.value.barCode,
-        discount: 1,  // 默认无折扣
-        isHot: false, // 默认非热销
+        discount: 1,
+        isHot: false,
         tags: tags,
         status: newProductForm.value.onshelf ? 'onshelf' : 'offshelf'
       }
 
-      // 添加到产品数据源
-      productsData.push(newProduct)
+      const success = addProductData(newProduct)
+      if (!success) {
+        ElMessage.error('商品 ID 已存在，请使用其他 ID')
+        return
+      }
+
+      products.value = loadProducts()
       triggerRef(products)
 
       ElMessage.success('商品添加成功')
@@ -630,6 +661,7 @@ export default {
     const saveDiscount = () => {
       if (selectedProduct.value) {
         selectedProduct.value.discount = tempDiscount.value
+        updateProductData(selectedProduct.value.id, { discount: tempDiscount.value })
         triggerRef(products)
         ElMessage.success('折扣设置已保存')
         detailDialogVisible.value = false
@@ -659,6 +691,8 @@ export default {
       showProductDetail,
       showAddProductDialog,
       handleAddProduct,
+      handleImageUpload,
+      removeImage,
       handleDiscountChange,
       handleDiscountInputChange,
       removeDiscount,
@@ -716,6 +750,81 @@ export default {
 
 .add-product-dialog .product-form {
   padding: 10px 5px;
+}
+
+.image-upload-wrapper {
+  width: 100%;
+}
+
+.image-uploader :deep(.el-upload) {
+  width: 100%;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.image-uploader :deep(.el-upload:hover) {
+  border-color: #409eff;
+}
+
+.upload-placeholder {
+  width: 178px;
+  height: 178px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #8c939d;
+}
+
+.upload-icon {
+  font-size: 40px;
+  color: #c0c4cc;
+}
+
+.upload-text {
+  font-size: 14px;
+  color: #909399;
+}
+
+.image-preview {
+  width: 178px;
+  height: 178px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e4e7ed;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  color: #fff;
+  font-size: 24px;
+}
+
+.image-preview:hover .image-preview-overlay {
+  opacity: 1;
 }
 
 .filter-bar {

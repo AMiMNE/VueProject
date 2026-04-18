@@ -1,50 +1,71 @@
 <template>
   <div class="login-page">
-    <div class="left-section">
-      <div class="characters-container">
-        <div class="purple-character" :class="purpleClass" id="purpleCharacter">
-          <div class="eyes-container">
-            <div class="eye-ball" :class="{ 'peek-left': isPurplePeeking }" id="purpleLeftEye">
-              <div class="pupil" id="purpleLeftPupil" ref="purpleLeftPupil"></div>
-            </div>
-            <div class="eye-ball" :class="{ 'peek-right': isPurplePeeking }" id="purpleRightEye">
-              <div class="pupil" id="purpleRightPupil" ref="purpleRightPupil"></div>
-            </div>
+    <div class="shop-title" @mouseenter="showSurprise" @mouseleave="hideSurprise">
+      <div class="title-char" :class="{ shifted: showSurpriseChar }">优</div>
+      <div class="surprise-character" :class="{ visible: showSurpriseChar }">
+        <div class="eyes-container">
+          <div class="eye-ball" ref="surpriseLeftEye">
+            <div class="pupil"></div>
+          </div>
+          <div class="eye-ball" ref="surpriseRightEye">
+            <div class="pupil"></div>
           </div>
         </div>
-
-        <div class="black-character" :class="blackClass" id="blackCharacter">
-          <div class="eyes-container">
-            <div class="eye-ball" id="blackLeftEye">
-              <div class="pupil" id="blackLeftPupil" ref="blackLeftPupil"></div>
-            </div>
-            <div class="eye-ball" id="blackRightEye">
-              <div class="pupil" id="blackRightPupil" ref="blackRightPupil"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="orange-character" :class="orangeClass" id="orangeCharacter">
-          <div class="eyes-container">
-            <div class="pupil-only" id="orangeLeftPupil" ref="orangeLeftPupil"></div>
-            <div class="pupil-only" id="orangeRightPupil" ref="orangeRightPupil"></div>
-          </div>
-        </div>
-
-        <div class="yellow-character" :class="yellowClass" id="yellowCharacter">
-          <div class="eyes-container">
-            <div class="pupil-only" id="yellowLeftPupil" ref="yellowLeftPupil"></div>
-            <div class="pupil-only" id="yellowRightPupil" ref="yellowRightPupil"></div>
-          </div>
-          <div class="mouth" id="yellowMouth"></div>
+        <div class="smile-mouth">
+          <div class="tooth left-tooth"></div>
+          <div class="tooth right-tooth"></div>
         </div>
       </div>
+      <div class="title-char" :class="{ shifted: showSurpriseChar }">鲜</div>
+      <div class="title-char" :class="{ shifted: showSurpriseChar }">选</div>
     </div>
+    <div class="main-content">
+      <div class="left-section">
+        <div class="characters-container">
+          <div class="purple-character" :class="purpleClass" id="purpleCharacter">
+            <div class="eyes-container">
+              <div class="eye-ball" :class="{ 'peek-left': isPurplePeeking }" id="purpleLeftEye" ref="purpleLeftEye">
+                <div class="pupil" id="purpleLeftPupil" ref="purpleLeftPupil"></div>
+              </div>
+              <div class="eye-ball" :class="{ 'peek-right': isPurplePeeking }" id="purpleRightEye" ref="purpleRightEye">
+                <div class="pupil" id="purpleRightPupil" ref="purpleRightPupil"></div>
+              </div>
+            </div>
+          </div>
 
-    <div class="right-section">
+          <div class="black-character" :class="blackClass" id="blackCharacter">
+            <div class="eyes-container">
+              <div class="eye-ball" id="blackLeftEye" ref="blackLeftEye">
+                <div class="pupil" id="blackLeftPupil" ref="blackLeftPupil"></div>
+              </div>
+              <div class="eye-ball" id="blackRightEye" ref="blackRightEye">
+                <div class="pupil" id="blackRightPupil" ref="blackRightPupil"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="orange-character" :class="orangeClass" id="orangeCharacter">
+            <div class="eyes-container">
+              <div class="pupil-only" id="orangeLeftPupil" ref="orangeLeftPupil"></div>
+              <div class="pupil-only" id="orangeRightPupil" ref="orangeRightPupil"></div>
+            </div>
+          </div>
+
+          <div class="yellow-character" :class="yellowClass" id="yellowCharacter">
+            <div class="eyes-container">
+              <div class="pupil-only" id="yellowLeftPupil" ref="yellowLeftPupil"></div>
+              <div class="pupil-only" id="yellowRightPupil" ref="yellowRightPupil"></div>
+            </div>
+            <div class="mouth" id="yellowMouth"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-section">
       <div class="login-container">
-        <div class="login-title">用户登录</div>
-        <el-form :model="formData" :rules="loginRules" ref="loginFormRef">
+        <div class="login-title">{{ isRegisterMode ? '用户注册' : '用户登录' }}</div>
+        
+        <el-form v-if="!isRegisterMode" :model="formData" :rules="loginRules" ref="loginFormRef">
           <el-form-item prop="username">
             <el-input 
               v-model="formData.username" 
@@ -94,7 +115,74 @@
             </el-button>
           </el-form-item>
         </el-form>
+
+        <el-form v-else :model="registerFormData" :rules="registerRules" ref="registerFormRef">
+          <el-form-item prop="username">
+            <el-input 
+              v-model="registerFormData.username" 
+              placeholder="请输入用户名"
+              :prefix-icon="User"
+              size="large"
+            />
+          </el-form-item>
+
+          <el-form-item prop="password">
+            <el-input 
+              :type="showPassword ? 'text' : 'password'" 
+              v-model="registerFormData.password" 
+              placeholder="请输入密码"
+              :prefix-icon="Lock"
+              size="large"
+              @input="handlePasswordInput"
+            >
+              <template #suffix>
+                <span class="toggle-password" @click="togglePassword">
+                  {{ showPassword ? '隐藏' : '显示' }}
+                </span>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item prop="confirmPassword">
+            <el-input 
+              :type="showPassword ? 'text' : 'password'" 
+              v-model="registerFormData.confirmPassword" 
+              placeholder="请再次输入密码"
+              :prefix-icon="Lock"
+              size="large"
+            />
+          </el-form-item>
+
+          <el-form-item prop="phone">
+            <el-input 
+              v-model="registerFormData.phone" 
+              placeholder="请输入电话号码"
+              :prefix-icon="User"
+              size="large"
+            />
+          </el-form-item>
+
+          <el-form-item>
+            <el-button 
+              type="primary" 
+              size="large" 
+              class="login-btn"
+              :loading="loading"
+              @click="handleRegister"
+            >
+              注 册
+            </el-button>
+          </el-form-item>
+        </el-form>
+
+        <div class="mode-toggle">
+          <span class="toggle-text">{{ isRegisterMode ? '已有账号？' : '没有账号？' }}</span>
+          <el-button type="text" class="toggle-btn" @click="toggleMode">
+            {{ isRegisterMode ? '立即登录' : '立即注册' }}
+          </el-button>
+        </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -104,21 +192,30 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
-import { validateUser } from '@/data/users.js'
+import { validateUser, registerUser } from '@/data/users.js'
 
 const router = useRouter()
 
 const loginFormRef = ref(null)
+const registerFormRef = ref(null)
+const isRegisterMode = ref(false)
 const formData = ref({
   username: '',
   password: '',
   role: '',
   remember: false
 })
+const registerFormData = ref({
+  username: '',
+  password: '',
+  confirmPassword: '',
+  phone: ''
+})
 const loading = ref(false)
 const showPassword = ref(false)
 const passwordLength = ref(0)
 const isPurplePeeking = ref(false)
+const showSurpriseChar = ref(false)
 
 const validateUsername = (rule, value, callback) => {
   if (!value) {
@@ -144,6 +241,26 @@ const validateRole = (rule, value, callback) => {
   }
 }
 
+const validatePhone = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error('请输入电话号码'))
+  } else if (!/^1[3-9]\d{9}$/.test(value)) {
+    callback(new Error('请输入正确的电话号码'))
+  } else {
+    callback()
+  }
+}
+
+const validateConfirmPassword = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error('请再次输入密码'))
+  } else if (value !== registerFormData.value.password) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
+
 const loginRules = {
   username: [
     { required: true, validator: validateUsername, trigger: 'blur' }
@@ -153,6 +270,23 @@ const loginRules = {
   ],
   role: [
     { required: true, validator: validateRole, trigger: 'change' }
+  ]
+}
+
+const registerRules = {
+  username: [
+    { required: true, validator: validateUsername, trigger: 'blur' },
+    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, validator: validatePassword, trigger: 'blur' },
+    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, validator: validateConfirmPassword, trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, validator: validatePhone, trigger: 'blur' }
   ]
 }
 
@@ -201,6 +335,20 @@ const togglePassword = () => {
   }
 }
 
+const showSurprise = () => {
+  showSurpriseChar.value = true
+}
+
+const hideSurprise = () => {
+  showSurpriseChar.value = false
+}
+
+const toggleMode = () => {
+  isRegisterMode.value = !isRegisterMode.value
+  if (loginFormRef.value) loginFormRef.value.resetFields()
+  if (registerFormRef.value) registerFormRef.value.resetFields()
+}
+
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   
@@ -211,13 +359,15 @@ const handleLogin = async () => {
         const user = validateUser(formData.value.username, formData.value.password, formData.value.role)
         
         if (user) {
-          localStorage.setItem('username', formData.value.username)
-          localStorage.setItem('userRole', formData.value.role)
+          sessionStorage.setItem('username', formData.value.username)
+          sessionStorage.setItem('userRole', formData.value.role)
 
           if (formData.value.remember) {
             localStorage.setItem('remember', 'true')
+            localStorage.setItem('rememberUsername', formData.value.username)
           } else {
             localStorage.removeItem('remember')
+            localStorage.removeItem('rememberUsername')
           }
 
           if (formData.value.role === 'admin') {
@@ -228,6 +378,32 @@ const handleLogin = async () => {
           ElMessage.success('登录成功！')
         } else {
           ElMessage.error('用户名或密码错误')
+        }
+
+        loading.value = false
+      }, 1000)
+    }
+  })
+}
+
+const handleRegister = async () => {
+  if (!registerFormRef.value) return
+  
+  await registerFormRef.value.validate((valid) => {
+    if (valid) {
+      loading.value = true
+      setTimeout(() => {
+        const result = registerUser(
+          registerFormData.value.username,
+          registerFormData.value.password,
+          registerFormData.value.phone
+        )
+        
+        if (result.success) {
+          ElMessage.success(result.message)
+          toggleMode()
+        } else {
+          ElMessage.error(result.message)
         }
 
         loading.value = false
@@ -349,16 +525,31 @@ const startPurplePeeking = () => {
   }
 }
 
+const surpriseLeftEye = ref(null)
+const surpriseRightEye = ref(null)
+const purpleLeftEye = ref(null)
+const purpleRightEye = ref(null)
+const blackLeftEye = ref(null)
+const blackRightEye = ref(null)
+
 const blink = () => {
-  const eyeBalls = document.querySelectorAll('.eye-ball')
-  eyeBalls.forEach(eye => {
+  const eyes = [
+    surpriseLeftEye.value,
+    surpriseRightEye.value,
+    purpleLeftEye.value,
+    purpleRightEye.value,
+    blackLeftEye.value,
+    blackRightEye.value
+  ].filter(Boolean)
+  
+  eyes.forEach(eye => {
     eye.style.height = '2px'
     setTimeout(() => {
       eye.style.height = ''
     }, 150)
   })
   
-  blinkTimeout = setTimeout(blink, Math.random() * 4000 + 3000)
+  blinkTimeout = setTimeout(blink, Math.random() * 6000 + 5000)
 }
 
 const handleMouseMove = (e) => {
@@ -372,7 +563,7 @@ onMounted(() => {
   
   setTimeout(blink, 3000)
   
-  const savedUsername = localStorage.getItem('username')
+  const savedUsername = localStorage.getItem('rememberUsername')
   if (savedUsername) {
     formData.value.username = savedUsername
     formData.value.remember = true
@@ -390,7 +581,142 @@ onUnmounted(() => {
 .login-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.shop-title {
+  font-size: 72px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  padding: 40px 0 20px;
+  position: relative;
+  z-index: 10;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0px;
+}
+
+.title-char {
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-shadow: 
+    0 1px 0 #5a4fa0,
+    0 2px 0 #524795,
+    0 3px 0 #4a3f8a,
+    0 4px 0 #423780,
+    0 5px 0 #3a2f75,
+    0 6px 0 #32276b,
+    0 7px 0 #2a1f60,
+    0 8px 0 #221755,
+    0 9px 0 #1a0f4b,
+    0 10px 0 #120740,
+    0 20px 35px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.15);
+}
+
+.title-char.shifted:nth-child(1) {
+  transform: translateX(-80px);
+}
+
+.title-char.shifted:nth-child(3) {
+  transform: translateX(80px);
+}
+
+.title-char.shifted:nth-child(4) {
+  transform: translateX(80px);
+}
+
+.surprise-character {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: #E8D754;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  /* margin 用于微调位置：正数向右/下，负数向左/上 */
+  margin-left: -40px;    /* 水平微调 */
+  margin-top: 0px;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 20;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.surprise-character.visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* 眼睛容器 */
+.surprise-character .eyes-container {
+  position: absolute;
+  display: flex;
+  gap: 10px;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 眼白*/
+.surprise-character .eye-ball {
+  width: 22px;
+  height: 22px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 眼珠子 */
+.surprise-character .pupil {
+  width: 8px;
+  height: 8px;
+  background-color: #2D2D2D;
+  border-radius: 50%;
+}
+
+.smile-mouth {
+  position: absolute;
+  width: 50px;
+  height: 25px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2D2D2D;
+  border-radius: 0 0 25px 25px;
+  overflow: hidden;
+}
+
+.tooth {
+  position: absolute;
+  width: 15px;
+  height: 12px;
+  background-color: white;
+  top: 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.left-tooth {
+  left: 50%;
+  transform: translateX(-100%);
+  border-right: 1px solid #2D2D2D;
+}
+
+.right-tooth {
+  left: 50%;
+  border-left: 1px solid #2D2D2D;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
 }
 
 .left-section {
@@ -712,5 +1038,31 @@ onUnmounted(() => {
 
 :deep(.el-input__wrapper:focus-within) {
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+}
+
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.toggle-text {
+  color: #606266;
+  font-size: 14px;
+}
+
+.toggle-btn {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 0;
+}
+
+.toggle-btn:hover {
+  color: #5a6fd6;
 }
 </style>

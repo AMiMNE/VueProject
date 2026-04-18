@@ -72,6 +72,13 @@
           <el-option label="未催单" value="not-urgent" />
         </el-select>
       </div>
+
+      <!-- 重置按钮 -->
+      <div class="filter-item">
+        <el-button type="primary" @click="resetFilters">
+          重置筛选
+        </el-button>
+      </div>
     </div>
     
     <!-- 排序栏：订单号和日期的升序/降序排列 -->
@@ -120,11 +127,11 @@
       <!-- 表格容器 -->
       <div class="table-wrapper">
         <!-- 订单列表表格 -->
-        <el-table :data="paginatedOrders" style="width: 100%" class="rounded-table">
-          <el-table-column prop="id" label="订单号" width="150" />
-          <el-table-column prop="customer" label="客户" width="120" />
+        <el-table :data="paginatedOrders" style="width: 100%" :key="tableKey">
+          <el-table-column prop="id" label="订单号" />
+          <el-table-column prop="customer" label="客户" />
           <!-- 订单状态列 -->
-          <el-table-column prop="status" label="状态" width="120">
+          <el-table-column prop="status" label="状态">
             <template #default="scope">
               <el-tag :type="getStatusType(scope.row.status)">
                 {{ scope.row.status }}
@@ -132,7 +139,7 @@
             </template>
           </el-table-column>
           <!-- 催单信息列 -->
-          <el-table-column label="催单" width="120">
+          <el-table-column label="催单">
             <template #default="scope">
               <el-tag v-if="scope.row.urgentCount > 0" type="danger">
                 已催单 ({{ scope.row.urgentCount }})
@@ -140,9 +147,9 @@
               <span v-else style="color: #909399;">-</span>
             </template>
           </el-table-column>
-          <el-table-column prop="date" label="日期" width="120" />
+          <el-table-column prop="date" label="日期" />
           <!-- 操作列 -->
-          <el-table-column label="操作" width="160">
+          <el-table-column label="操作">
             <template #default="scope">
               <el-button size="small" @click="showOrderDetail(scope.row)">查看</el-button>
               <!-- 仅待发货订单显示发货按钮 -->
@@ -280,7 +287,7 @@
  * 订单管理页面组件
  * 功能：订单列表展示、筛选、排序、发货、查看详情
  */
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 // 导入 Element Plus 图标
 import { Search } from '@element-plus/icons-vue'
 // 导入 Element Plus 消息提示
@@ -312,6 +319,8 @@ export default {
     // 筛选后的订单列表
     const filteredOrders = ref([...props.orders])
     
+    const tableKey = ref(0)
+    
     // 订单详情相关
     const detailDialogVisible = ref(false)  // 详情对话框显示状态
     const currentOrder = ref(null)          // 当前查看的订单
@@ -322,35 +331,26 @@ export default {
     // ========== 分页相关 ==========
     const currentPage = ref(1)         // 当前页码
     const pageSize = ref(5)            // 每页显示条数
-    const paginatedOrders = ref([])    // 当前页的订单数据
 
-    /**
-     * 更新分页数据
-     * 根据当前页码和每页条数截取 filteredOrders 的数据
-     */
-    const updatePaginatedOrders = () => {
+    const paginatedOrders = computed(() => {
       const start = (currentPage.value - 1) * pageSize.value
       const end = start + pageSize.value
-      paginatedOrders.value = filteredOrders.value.slice(start, end)
-    }
+      return filteredOrders.value.slice(start, end)
+    })
 
     /**
      * 处理每页条数变化
      * @param {number} val - 新的每页条数
      */
-    const handleSizeChange = (val) => {
-      pageSize.value = val
-      currentPage.value = 1  // 重置到第一页
-      updatePaginatedOrders()
+    const handleSizeChange = () => {
+      currentPage.value = 1
     }
 
     /**
      * 处理页码变化
      * @param {number} val - 新的页码
      */
-    const handleCurrentChange = (val) => {
-      currentPage.value = val
-      updatePaginatedOrders()
+    const handleCurrentChange = () => {
     }
 
     const startLoading = () => {
@@ -437,7 +437,7 @@ export default {
 
       filteredOrders.value = result
       currentPage.value = 1
-      updatePaginatedOrders()
+      tableKey.value++
     }
 
     const formatDate = (date) => {
@@ -469,6 +469,17 @@ export default {
     }
 
     const handleOrderDateChange = () => {
+      filterOrders()
+    }
+
+    const resetFilters = () => {
+      orderSearch.value = ''
+      orderStatus.value = ''
+      orderDate.value = null
+      orderUrgent.value = ''
+      dateFilter.value = ''
+      sortOption.value = ''
+      currentPage.value = 1
       filterOrders()
     }
 
@@ -509,11 +520,13 @@ export default {
       paginatedOrders,
       currentPage,
       pageSize,
+      tableKey,
       getStatusType,
       handleOrderSearchClear,
       handleOrderStatusChange,
       handleOrderDateChange,
       filterOrders,
+      resetFilters,
       handleShip,
       detailDialogVisible,
       currentOrder,
@@ -521,9 +534,6 @@ export default {
       detailLoading,
       loadingPercentage,
       handleDialogClose,
-      paginatedOrders,
-      currentPage,
-      pageSize,
       handleSizeChange,
       handleCurrentChange
     }
@@ -582,6 +592,11 @@ export default {
 .table-wrapper {
   flex: 1;
   min-width: 0;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 3px solid #4b81a2;
+  box-shadow: 0 4px 16px rgba(75, 129, 162, 0.2);
 }
 
 .table-wrapper > .el-table {
@@ -589,26 +604,19 @@ export default {
   min-width: 0;
 }
 
-.rounded-table {
-  border: 3px solid #4b81a2;
-  border-radius: 12px;
-  overflow: hidden;
+:deep(.el-table) {
   min-height: 280px;
 }
 
-.rounded-table :deep(.el-table__header-wrapper) {
-  border-bottom: 2px solid #4b81a2;
+:deep(.el-table th.el-table__cell) {
+  text-align: center;
 }
 
-.rounded-table :deep(.el-table__row) {
-  border-bottom: 1px solid #ebeef5;
+:deep(.el-table td.el-table__cell) {
+  text-align: center;
 }
 
-.rounded-table :deep(.el-table__row:last-child) {
-  border-bottom: none;
-}
-
-.rounded-table :deep(.el-table__body-wrapper) {
+:deep(.el-table__body-wrapper) {
   min-height: 240px;
 }
 

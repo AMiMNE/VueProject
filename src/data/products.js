@@ -1,3 +1,7 @@
+const PRODUCTS_KEY = 'systemProducts'
+const PRODUCTS_VERSION_KEY = 'systemProductsVersion'
+const CURRENT_VERSION = 1
+
 const imagesContext = require.context('../assets/products', true, /\.(png|jpe?g|gif|webp|svg)$/)
 
 const productImages = {}
@@ -19,7 +23,7 @@ export const categories = [
   { id: 'instant', name: '速食', icon: 'Food' }
 ]
 
-export const products = [
+const defaultProducts = [
   {
     id: 'P001',
     name: '农夫山泉',
@@ -292,15 +296,75 @@ export const products = [
   }
 ]
 
-export const hotProducts = products.filter(p => p.isHot)
+export const getProducts = () => {
+  const savedVersion = localStorage.getItem(PRODUCTS_VERSION_KEY)
+  const productsStr = localStorage.getItem(PRODUCTS_KEY)
+
+  if (productsStr && savedVersion === String(CURRENT_VERSION)) {
+    return JSON.parse(productsStr)
+  }
+
+  saveProducts(defaultProducts)
+  localStorage.setItem(PRODUCTS_VERSION_KEY, String(CURRENT_VERSION))
+  return defaultProducts
+}
+
+export const saveProducts = (products) => {
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products))
+}
+
+export const addProduct = (product) => {
+  const products = getProducts()
+  const existing = products.find(p => p.id === product.id)
+  if (existing) {
+    return false
+  }
+  products.push(product)
+  saveProducts(products)
+  return true
+}
+
+export const updateProduct = (productId, updates) => {
+  const products = getProducts()
+  const index = products.findIndex(p => p.id === productId)
+  if (index === -1) {
+    return false
+  }
+  products[index] = { ...products[index], ...updates }
+  saveProducts(products)
+  return true
+}
+
+export const deleteProduct = (productId) => {
+  const products = getProducts()
+  const filtered = products.filter(p => p.id !== productId)
+  if (filtered.length === products.length) {
+    return false
+  }
+  saveProducts(filtered)
+  return true
+}
+
+export const getProductById = (id) => {
+  const products = getProducts()
+  return products.find(p => p.id === id)
+}
 
 export const getProductsByCategory = (categoryId) => {
+  const products = getProducts()
   if (!categoryId || categoryId === 'all') {
     return products
   }
   return products.filter(p => p.category === categoryId)
 }
 
-export const getProductById = (id) => {
-  return products.find(p => p.id === id)
+export const getHotProducts = () => {
+  const products = getProducts()
+  return products.filter(p => p.isHot)
+}
+
+export const resetProducts = () => {
+  saveProducts(defaultProducts)
+  localStorage.setItem(PRODUCTS_VERSION_KEY, String(CURRENT_VERSION))
+  return defaultProducts
 }

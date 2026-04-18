@@ -43,7 +43,7 @@
       <el-radio-group v-model="activeFilter" size="default">
         <el-radio-button label="all">全部订单</el-radio-button>
         <el-radio-button label="待发货">待发货</el-radio-button>
-        <el-radio-button label="配送中">配送中</el-radio-button>
+        <el-radio-button label="已发货">待收货</el-radio-button>
         <el-radio-button label="已完成">已完成</el-radio-button>
       </el-radio-group>
     </div>
@@ -101,6 +101,10 @@
               <el-icon><Bell /></el-icon>
               催单 {{ order.urgentCount > 0 ? `(${order.urgentCount})` : '' }}
             </el-button>
+            <el-button v-if="order.status === '已发货'" type="success" size="small" @click="handleConfirmReceive(order)">
+              <el-icon><CircleCheck /></el-icon>
+              确认收货
+            </el-button>
             <el-button size="small" @click="$emit('viewDetail', order)">
               <el-icon><View /></el-icon>
               查看详情
@@ -112,13 +116,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="floating-action">
-      <el-button type="primary" size="large" class="go-shopping-btn" @click="$emit('goShopping')">
-        <el-icon><Shop /></el-icon>
-        去逛逛
-      </el-button>
     </div>
   </div>
 </template>
@@ -138,8 +135,8 @@ import {
   Shop,
   Bell
 } from '@element-plus/icons-vue'
-import { products } from '@/data/products.js'
-import { urgentOrder } from '@/data/orders.js'
+import { getProducts } from '@/data/products.js'
+import { urgentOrder, updateOrderStatus } from '@/data/orders.js'
 import { ElMessage } from 'element-plus'
 import MiniCartoonCharacter from '@/components/MiniCartoonCharacter.vue'
 
@@ -171,7 +168,7 @@ export default {
 
     const stats = computed(() => {
       const total = props.orders.length
-      const pending = props.orders.filter(o => o.status === '待发货' || o.status === '配送中').length
+      const pending = props.orders.filter(o => o.status === '待发货' || o.status === '已发货').length
       const completed = props.orders.filter(o => o.status === '已完成').length
       const totalAmount = props.orders
         .filter(o => o.status === '已完成')
@@ -190,21 +187,33 @@ export default {
     const getStatusType = (status) => {
       const statusMap = {
         '待发货': 'warning',
-        '配送中': 'primary',
+        '已发货': 'primary',
         '已完成': 'success',
         '已取消': 'danger'
       }
       return statusMap[status] || 'info'
     }
 
+    const handleConfirmReceive = (order) => {
+      const success = updateOrderStatus(order.id, '已完成')
+      if (success) {
+        order.status = '已完成'
+        ElMessage.success('确认收货成功，订单已完成')
+        emit('orderUpdated')
+      } else {
+        ElMessage.error('确认收货失败')
+      }
+    }
+
     const getProductImage = (productId) => {
-      const product = products.find(p => p.id === productId)
+      const product = getProducts().find(p => p.id === productId)
       return product ? product.image : ''
     }
 
     const getFullOrderItems = (order) => {
+      const productsList = getProducts()
       return order.items.map(item => {
-        const product = products.find(p => p.id === item.productId)
+        const product = productsList.find(p => p.id === item.productId)
         return {
           ...item,
           image: product ? product.image : '',
@@ -239,6 +248,7 @@ export default {
       getProductImage,
       getFullOrderItems,
       handleUrgent,
+      handleConfirmReceive,
       emitBuyAgain
     }
   }
@@ -373,34 +383,7 @@ export default {
   margin-bottom: 25px;
 }
 
-.floating-action {
-  position: fixed;
-  right: 40px;
-  bottom: 40px;
-  z-index: 100;
-}
 
-.go-shopping-btn {
-  padding: 18px 36px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 50px;
-  background: linear-gradient(135deg, #42b983 0%, #35a070 100%);
-  border: none;
-  box-shadow: 0 8px 24px rgba(66, 185, 131, 0.4);
-  transition: all 0.3s ease;
-}
-
-.go-shopping-btn:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 32px rgba(66, 185, 131, 0.5);
-  background: linear-gradient(135deg, #35a070 0%, #2d8f62 100%);
-}
-
-.go-shopping-btn .el-icon {
-  margin-right: 8px;
-  font-size: 20px;
-}
 
 .filter-section :deep(.el-radio-group) {
   display: flex;

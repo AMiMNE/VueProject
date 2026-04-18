@@ -138,11 +138,20 @@
         <el-form-item label="用户名">
           <el-input v-model="userForm.username" placeholder="请输入用户名" />
         </el-form-item>
+        <el-form-item v-if="!isEditMode" label="密码">
+          <el-input v-model="userForm.password" placeholder="请输入密码" type="password" show-password />
+        </el-form-item>
         <el-form-item label="电话号码">
           <el-input v-model="userForm.phone" placeholder="请输入电话号码" />
         </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="userForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
         <el-form-item label="角色">
-          <el-input v-model="userForm.role" disabled />
+          <el-select v-model="userForm.role" placeholder="请选择角色" :disabled="isEditMode">
+            <el-option label="管理员" value="管理员" />
+            <el-option label="用户" value="用户" />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="userForm.status" placeholder="请选择状态" :disabled="userForm.role === '管理员'">
@@ -163,6 +172,7 @@
 import { ref, watch, computed } from 'vue'
 import { Search, Plus, User, UserFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getUsers, saveUsers, addUser, generateUserId } from '@/data/users.js'
 
 export default {
   name: 'DashboardManageUser',
@@ -180,7 +190,9 @@ export default {
     const userForm = ref({
       id: '',
       username: '',
+      password: '',
       phone: '',
+      email: '',
       role: '',
       status: ''
     })
@@ -234,7 +246,9 @@ export default {
       userForm.value = {
         id: '',
         username: '',
+        password: '',
         phone: '',
+        email: '',
         role: '用户',
         status: '正常'
       }
@@ -253,22 +267,47 @@ export default {
         return
       }
 
+      if (!isEditMode.value && !userForm.value.password) {
+        ElMessage.warning('请输入密码')
+        return
+      }
+
+      const users = getUsers()
+
       if (isEditMode.value) {
-        const index = props.users.findIndex(u => u.id === userForm.value.id)
+        const index = users.findIndex(u => u.id === userForm.value.id)
         if (index !== -1) {
-          // 保留原始角色，不允许修改
-          const originalUser = props.users[index]
-          props.users[index] = {
+          const originalUser = users[index]
+          users[index] = {
             ...userForm.value,
-            role: originalUser.role
+            role: originalUser.role,
+            password: originalUser.password
           }
+          saveUsers(users)
+          
+          const propIndex = props.users.findIndex(u => u.id === userForm.value.id)
+          if (propIndex !== -1) {
+            props.users[propIndex] = { ...users[index] }
+          }
+          
           ElMessage.success('修改成功')
         }
       } else {
-        const newId = userForm.value.role === '管理员'
-          ? `A${String(props.users.filter(u => u.role === '管理员').length + 1).padStart(3, '0')}`
-          : `U${String(props.users.filter(u => u.role === '用户').length + 1).padStart(3, '0')}`
-        props.users.push({ ...userForm.value, id: newId })
+        const existingUser = users.find(u => u.username === userForm.value.username)
+        if (existingUser) {
+          ElMessage.warning('用户名已存在')
+          return
+        }
+        
+        const newId = generateUserId(userForm.value.role)
+        const newUser = { 
+          ...userForm.value, 
+          id: newId
+        }
+        users.push(newUser)
+        saveUsers(users)
+        
+        props.users.push({ ...newUser })
         ElMessage.success('添加成功')
       }
 
@@ -282,9 +321,16 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        const index = props.users.findIndex(u => u.id === user.id)
-        if (index !== -1) {
-          props.users.splice(index, 1)
+        const users = getUsers()
+        const filteredUsers = users.filter(u => u.id !== user.id)
+        if (filteredUsers.length < users.length) {
+          saveUsers(filteredUsers)
+          
+          const index = props.users.findIndex(u => u.id === user.id)
+          if (index !== -1) {
+            props.users.splice(index, 1)
+          }
+          
           ElMessage.success('删除成功')
           filterUsers()
         }
@@ -293,6 +339,14 @@ export default {
 
     const handleStatusChange = (user) => {
       user.status = user.status === '正常' ? '禁用' : '正常'
+      
+      const users = getUsers()
+      const index = users.findIndex(u => u.id === user.id)
+      if (index !== -1) {
+        users[index].status = user.status
+        saveUsers(users)
+      }
+      
       ElMessage.success(`状态已更新为${user.status}`)
     }
 

@@ -201,6 +201,7 @@ export default {
   emits: ['update:settings'],
   setup(props, { emit }) {
     const router = useRouter()
+    const currentUsername = sessionStorage.getItem('username') || ''
     const localSettings = ref({ ...props.settings })
     const emailSubscribe = ref(true)
     const themeMode = ref('light')
@@ -254,9 +255,8 @@ export default {
           type: 'warning'
         }
       ).then(() => {
-        localStorage.removeItem('username')
-        localStorage.removeItem('userRole')
-        localStorage.removeItem('cartItems')
+        sessionStorage.removeItem('username')
+        sessionStorage.removeItem('userRole')
         ElMessage.success('已成功退出')
         router.push('/login')
       }).catch(() => {})
@@ -273,9 +273,14 @@ export default {
         }
       ).then(() => {
         const keysToRemove = []
+        const userPrefixes = [
+          `cartItems_${currentUsername}`,
+          `userAvatar_${currentUsername}`,
+          `userAddresses_${currentUsername}`
+        ]
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
-          if (!key.includes('systemUsers') && !key.includes('systemOrders') && !key.includes('systemUsersVersion') && !key.includes('systemOrdersVersion')) {
+          if (userPrefixes.includes(key)) {
             keysToRemove.push(key)
           }
         }

@@ -154,26 +154,23 @@
           <div 
             v-for="msg in unreadMessages" 
             :key="msg.id" 
-            class="message-item"
-            :class="msg.type"
+            class="message-item consult"
             @click="$emit('navigate', 'messages')"
             style="cursor: pointer;"
           >
-            <div class="message-icon" :class="msg.type">
-              <el-icon v-if="msg.type === 'urge'"><Warning /></el-icon>
-              <el-icon v-else-if="msg.type === 'consult'"><ChatDotRound /></el-icon>
-              <el-icon v-else><InfoFilled /></el-icon>
+            <div class="message-icon consult">
+              <el-icon><ChatDotRound /></el-icon>
             </div>
             <div class="message-content">
               <div class="message-header">
-                <span class="message-title">{{ msg.title }}</span>
-                <span class="message-time">{{ msg.time }}</span>
+                <span class="message-title">{{ msg.fromName }}</span>
+                <span class="message-time">{{ formatTime(msg.time) }}</span>
               </div>
               <div class="message-desc">{{ msg.content }}</div>
             </div>
           </div>
           <div v-if="unreadMessages.length === 0" class="empty-tip">
-            <el-icon><Inbox /></el-icon>
+            <el-icon><ChatDotRound /></el-icon>
             <span>暂无未读消息</span>
           </div>
         </div>
@@ -225,12 +222,13 @@
 
 <script>
 import { computed, ref } from 'vue'
-import { User, Goods, Document, Money, Bell, Clock, Warning, ChatDotRound, InfoFilled, Box, Top, Bottom, Minus, Calendar, Inbox, CircleCheck } from '@element-plus/icons-vue'
-import { products as productsData, categories as categoriesData } from '../../data/products'
+import { User, Goods, Document, Money, Bell, Clock, Warning, ChatDotRound, InfoFilled, Box, Top, Bottom, Minus, Calendar, CircleCheck } from '@element-plus/icons-vue'
+import { getProducts as loadProducts, categories as categoriesData } from '../../data/products'
+import { getMessages } from '@/data/messages.js'
 
 export default {
   name: 'DashboardHome',
-  components: { User, Goods, Document, Money, Bell, Clock, Warning, ChatDotRound, InfoFilled, Box, Top, Bottom, Minus, Calendar, Inbox, CircleCheck },
+  components: { User, Goods, Document, Money, Bell, Clock, Warning, ChatDotRound, InfoFilled, Box, Top, Bottom, Minus, Calendar, CircleCheck },
   props: {
     currentUser: { type: String, default: '' },
     users: { type: Array, default: () => [] },
@@ -238,7 +236,7 @@ export default {
   },
   emits: ['navigate'],
   setup(props) {
-    const products = productsData
+    const products = loadProducts()
     const categories = categoriesData
 
     const getCategoryName = (categoryId) => {
@@ -260,45 +258,34 @@ export default {
       return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${weekDays[now.getDay()]}`
     })
 
-    const unreadMessages = ref([
-      {
-        id: 1,
-        type: 'urge',
-        title: '催单提醒',
-        content: '客户张三催促订单 ORD001 尽快发货',
-        time: '5分钟前'
-      },
-      {
-        id: 2,
-        type: 'consult',
-        title: '咨询消息',
-        content: '客户李四咨询商品库存情况',
-        time: '15分钟前'
-      },
-      {
-        id: 3,
-        type: 'urge',
-        title: '催单提醒',
-        content: '客户王五询问订单 ORD002 发货进度',
-        time: '30分钟前'
-      },
-      {
-        id: 4,
-        type: 'consult',
-        title: '咨询消息',
-        content: '客户赵六咨询退款流程',
-        time: '1小时前'
-      },
-      {
-        id: 5,
-        type: 'notice',
-        title: '系统通知',
-        content: '本周销售报表已生成，请查看',
-        time: '2小时前'
-      }
-    ])
+    const unreadMessages = computed(() => {
+      const messages = getMessages()
+      return messages.filter(m => !m.isRead && m.from !== 'admin')
+    })
 
-    return { products, getCategoryName, totalRevenue, pendingOrders, unreadMessages, currentDate }
+    const formatTime = (timeStr) => {
+      const time = new Date(timeStr)
+      const now = new Date()
+      const diff = now - time
+
+      if (diff < 1000 * 60) return '刚刚'
+      if (diff < 1000 * 60 * 60) return `${Math.floor(diff / (1000 * 60))}分钟前`
+      if (diff < 1000 * 60 * 60 * 24) return `${Math.floor(diff / (1000 * 60 * 60))}小时前`
+
+      const month = String(time.getMonth() + 1).padStart(2, '0')
+      const day = String(time.getDate()).padStart(2, '0')
+      const hours = String(time.getHours()).padStart(2, '0')
+      const minutes = String(time.getMinutes()).padStart(2, '0')
+
+      if (diff < 1000 * 60 * 60 * 24 * 7) {
+        return `${month}-${day} ${hours}:${minutes}`
+      }
+
+      const year = time.getFullYear()
+      return `${year}-${month}-${day}`
+    }
+
+    return { products, getCategoryName, totalRevenue, pendingOrders, unreadMessages, formatTime, currentDate }
   }
 }
 </script>

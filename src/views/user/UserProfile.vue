@@ -188,7 +188,8 @@ import {
   Location,
   Plus
 } from '@element-plus/icons-vue'
-import { getOrders } from '@/data/orders.js'
+import { getOrders, getOrdersByUsername } from '@/data/orders.js'
+import { getUserByUsername, updateUser } from '@/data/users.js'
 
 export default {
   name: 'UserProfile',
@@ -214,6 +215,7 @@ export default {
     const avatarInput = ref(null)
     const avatarUrl = ref('')
     const localUserInfo = ref({ ...props.userInfo })
+    const currentUsername = sessionStorage.getItem('username') || ''
 
     const addressDialogVisible = ref(false)
     const editingIndex = ref(null)
@@ -230,14 +232,25 @@ export default {
       totalAmount: '0.00'
     })
 
+    const getUserStorageKey = (key) => {
+      return `${key}_${currentUsername}`
+    }
+
     watch(() => props.userInfo, (newVal) => {
       localUserInfo.value = { ...newVal }
     }, { deep: true })
 
     onMounted(() => {
+      const user = getUserByUsername(currentUsername)
+      if (user) {
+        localUserInfo.value.username = user.username
+        localUserInfo.value.phone = user.phone || ''
+        localUserInfo.value.email = user.email || ''
+      }
+      
       loadAddresses()
       loadStats()
-      const savedAvatar = localStorage.getItem('userAvatar')
+      const savedAvatar = localStorage.getItem(getUserStorageKey('userAvatar'))
       if (savedAvatar) {
         avatarUrl.value = savedAvatar
       }
@@ -253,7 +266,7 @@ export default {
         const reader = new FileReader()
         reader.onload = (event) => {
           avatarUrl.value = event.target.result
-          localStorage.setItem('userAvatar', event.target.result)
+          localStorage.setItem(getUserStorageKey('userAvatar'), event.target.result)
           ElMessage.success('头像已更新')
         }
         reader.readAsDataURL(file)
@@ -261,29 +274,28 @@ export default {
     }
 
     const saveProfile = () => {
+      const user = getUserByUsername(currentUsername)
+      if (user) {
+        updateUser(user.id, {
+          phone: localUserInfo.value.phone,
+          email: localUserInfo.value.email
+        })
+      }
       emit('update:userInfo', localUserInfo.value)
       ElMessage.success('个人信息已保存')
     }
 
     const loadAddresses = () => {
-      const saved = localStorage.getItem('userAddresses')
+      const saved = localStorage.getItem(getUserStorageKey('userAddresses'))
       if (saved) {
         addresses.value = JSON.parse(saved)
       } else {
-        addresses.value = [
-          {
-            name: props.userInfo.username,
-            phone: '13800138000',
-            detail: '北京市朝阳区某某街道某某小区1号楼1单元101室',
-            isDefault: true
-          }
-        ]
-        saveAddresses()
+        addresses.value = []
       }
     }
 
     const saveAddresses = () => {
-      localStorage.setItem('userAddresses', JSON.stringify(addresses.value))
+      localStorage.setItem(getUserStorageKey('userAddresses'), JSON.stringify(addresses.value))
     }
 
     const showAddressDialog = (addr = null, index = null) => {
@@ -352,7 +364,7 @@ export default {
     }
 
     const loadStats = () => {
-      const orders = getOrders()
+      const orders = getOrdersByUsername(currentUsername)
       const completedOrders = orders.filter(o => o.status === '已完成')
       stats.value.totalOrders = orders.length
       stats.value.totalAmount = completedOrders

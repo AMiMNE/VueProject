@@ -3,6 +3,28 @@
   <router-view/>
 </template>
 
+<script>
+import { onMounted } from 'vue'
+
+export default {
+  name: 'App',
+  setup() {
+    onMounted(() => {
+      const CLEANUP_KEY = 'dataCleanup_v3'
+      const hasCleaned = localStorage.getItem(CLEANUP_KEY)
+      
+      if (!hasCleaned) {
+        sessionStorage.removeItem('username')
+        sessionStorage.removeItem('userRole')
+        
+        localStorage.setItem(CLEANUP_KEY, 'true')
+        console.log('数据清理完成：已清理登录状态数据')
+      }
+    })
+  }
+}
+</script>
+
 <style>
 * {
   margin: 0;

@@ -8,8 +8,8 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    // component: HomeView
-    redirect: '/dashboard'
+    //component: HomeView
+    redirect: '/login'
   },
   {
     path: '/login',
@@ -41,8 +41,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('username')
-  const userRole = localStorage.getItem('userRole')
+  const isAuthenticated = sessionStorage.getItem('username')
+  const userRole = sessionStorage.getItem('userRole')
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')

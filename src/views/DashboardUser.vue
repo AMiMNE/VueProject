@@ -27,6 +27,24 @@
             <span>设置</span>
           </el-menu-item>
         </el-menu>
+        <div class="sidebar-bottom">
+          <el-button 
+            type="primary" 
+            class="go-shopping-sidebar-btn" 
+            @click="activeMenu = 'dashboard'"
+          >
+            <el-icon><Shop /></el-icon>
+            去逛逛
+          </el-button>
+          <el-button 
+            type="success" 
+            class="contact-merchant-btn" 
+            @click="activeMenu = 'messages'"
+          >
+            <el-icon><ChatDotRound /></el-icon>
+            联系商家
+          </el-button>
+        </div>
       </el-aside>
 
       <el-container>
@@ -60,7 +78,6 @@
               :cart-count="cartCount"
               @open-cart="showCart = true"
               @add-to-cart="addToCart"
-              @ask-ai="handleAskAI"
             />
             <UserProfile
               v-else-if="activeMenu === 'profile'"
@@ -80,6 +97,9 @@
               v-else-if="activeMenu === 'settings'"
               :settings="settings"
               @update:settings="settings = $event"
+            />
+            <UserMessages
+              v-else-if="activeMenu === 'messages'"
             />
           </div>
         </el-main>
@@ -202,13 +222,17 @@ import {
   Fold,
   Avatar,
   ArrowDown,
-  Delete
+  Delete,
+  Shop,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 import { getOrdersByUsername, createOrder } from '@/data/orders.js'
+import { getUserByUsername } from '@/data/users.js'
 import UserHome from './user/UserHome.vue'
 import UserProfile from './user/UserProfile.vue'
 import UserOrder from './user/UserOrder.vue'
 import UserSettings from './user/UserSettings.vue'
+import UserMessages from './user/UserMessages.vue'
 import AIChatAssistant from '@/components/AIChatAssistant.vue'
 
 export default {
@@ -222,10 +246,13 @@ export default {
     Avatar,
     ArrowDown,
     Delete,
+    Shop,
+    ChatDotRound,
     UserHome,
     UserProfile,
     UserOrder,
     UserSettings,
+    UserMessages,
     AIChatAssistant
   },
   setup() {
@@ -241,9 +268,9 @@ export default {
 
     const userInfo = ref({
       username: '',
-      email: 'user@example.com',
-      phone: '13800138000',
-      address: '北京市朝阳区'
+      email: '',
+      phone: '',
+      address: ''
     })
 
     const orders = ref([])
@@ -264,12 +291,25 @@ export default {
       }, 0)
     })
 
-    onMounted(() => {
-      const username = localStorage.getItem('username')
-      currentUser.value = username || '用户'
-      userInfo.value.username = username || '用户'
+    const getUserStorageKey = (key) => {
+      const username = sessionStorage.getItem('username') || ''
+      return `${key}_${username}`
+    }
 
-      const savedCart = localStorage.getItem('cartItems')
+    onMounted(() => {
+      const username = sessionStorage.getItem('username')
+      currentUser.value = username || '用户'
+      
+      const user = getUserByUsername(username)
+      if (user) {
+        userInfo.value.username = user.username
+        userInfo.value.phone = user.phone || ''
+        userInfo.value.email = user.email || ''
+      } else {
+        userInfo.value.username = username || '用户'
+      }
+
+      const savedCart = localStorage.getItem(getUserStorageKey('cartItems'))
       if (savedCart) {
         cartItems.value = JSON.parse(savedCart)
       }
@@ -283,9 +323,8 @@ export default {
 
     const handleCommand = (command) => {
       if (command === 'logout') {
-        localStorage.removeItem('username')
-        localStorage.removeItem('userRole')
-        localStorage.removeItem('cartItems')
+        sessionStorage.removeItem('username')
+        sessionStorage.removeItem('userRole')
         router.push('/login')
       } else if (command === 'profile') {
         activeMenu.value = 'profile'
@@ -301,7 +340,7 @@ export default {
     const getStatusType = (status) => {
       const statusMap = {
         '待发货': 'warning',
-        '配送中': 'primary',
+        '已发货': 'primary',
         '已完成': 'success',
         '已取消': 'danger'
       }
@@ -349,7 +388,7 @@ export default {
     }
 
     const saveCart = () => {
-      localStorage.setItem('cartItems', JSON.stringify(cartItems.value))
+      localStorage.setItem(getUserStorageKey('cartItems'), JSON.stringify(cartItems.value))
     }
 
     const handleCheckout = () => {
@@ -358,13 +397,13 @@ export default {
         return
       }
 
-      const username = localStorage.getItem('username')
+      const username = sessionStorage.getItem('username')
       const newOrder = createOrder(cartItems.value, cartTotal.value, username)
 
       orders.value = getOrdersByUsername(username)
 
       cartItems.value = []
-      localStorage.removeItem('cartItems')
+      localStorage.removeItem(getUserStorageKey('cartItems'))
 
       showCart.value = false
 
@@ -379,7 +418,7 @@ export default {
     }
 
     const refreshOrders = () => {
-      const username = localStorage.getItem('username')
+      const username = sessionStorage.getItem('username')
       orders.value = getOrdersByUsername(username)
     }
 
@@ -406,12 +445,6 @@ export default {
       ElMessage.success('已将商品加入购物车')
     }
 
-    const handleAskAI = (product) => {
-      if (aiAssistantRef.value) {
-        aiAssistantRef.value.askAboutProduct(product)
-      }
-    }
-
     return {
       aiAssistantRef,
       activeMenu,
@@ -435,8 +468,7 @@ export default {
       handleCheckout,
       viewOrderDetail,
       refreshOrders,
-      handleBuyAgain,
-      handleAskAI
+      handleBuyAgain
     }
   }
 }
@@ -456,6 +488,49 @@ export default {
   background-color: #42b983;
   color: #fff;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 16px;
+  background-color: #2d8f62;
+}
+
+.go-shopping-sidebar-btn {
+  width: 100%;
+  border-radius: 12px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #35a070 0%, #2d8f62 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.go-shopping-sidebar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #2d8f62 0%, #247351 100%);
+}
+
+.contact-merchant-btn {
+  width: 100%;
+  border-radius: 12px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #409eff 0%, #337ecc 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  margin-top: 8px;
+  margin-left: 0 !important;
+}
+
+.contact-merchant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #337ecc 0%, #2b6cb0 100%);
 }
 
 .logo {

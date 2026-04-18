@@ -4,10 +4,10 @@
     :class="characterClass"
   >
     <div class="eyes-container">
-      <div class="eye-ball">
+      <div class="eye-ball" ref="leftEye">
         <div class="pupil" ref="leftPupil"></div>
       </div>
-      <div class="eye-ball">
+      <div class="eye-ball" ref="rightEye">
         <div class="pupil" ref="rightPupil"></div>
       </div>
     </div>
@@ -29,6 +29,8 @@ const props = defineProps({
   }
 })
 
+const leftEye = ref(null)
+const rightEye = ref(null)
 const leftPupil = ref(null)
 const rightPupil = ref(null)
 const isOpen = ref(false)
@@ -44,15 +46,15 @@ watch(() => props.openMouth, (newVal) => {
 })
 
 const blink = () => {
-  const eyeBalls = document.querySelectorAll('.banner-character .eye-ball')
-  eyeBalls.forEach(eye => {
+  const eyes = [leftEye.value, rightEye.value].filter(Boolean)
+  eyes.forEach(eye => {
     eye.style.height = '4px'
     setTimeout(() => {
       eye.style.height = ''
     }, 150)
   })
   
-  blinkTimeout = setTimeout(blink, Math.random() * 4000 + 3000)
+  blinkTimeout = setTimeout(blink, Math.random() * 7000 + 6000)
 }
 
 const updatePupils = (e) => {

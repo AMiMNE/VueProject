@@ -178,11 +178,7 @@ export default {
 
     // 加载数据
     const loadData = () => {
-      const rawUsers = getUsers()
-      users.value = rawUsers.map(u => ({
-        ...u,
-        role: u.role === 'admin' ? '管理员' : '用户'
-      }))
+      users.value = getUsers()
       orders.value = getOrders()
       // 更新未读消息数
       unreadCount.value = getUnreadCount()
@@ -190,7 +186,7 @@ export default {
 
     // 组件挂载时执行
     onMounted(() => {
-      const username = localStorage.getItem('username')
+      const username = sessionStorage.getItem('username')
       currentUser.value = username || '用户'
       loadData()
     })
@@ -204,8 +200,8 @@ export default {
     const handleCommand = (command) => {
       if (command === 'logout') {
         // 清除登录信息并跳转到登录页
-        localStorage.removeItem('username')
-        localStorage.removeItem('userRole')
+        sessionStorage.removeItem('username')
+        sessionStorage.removeItem('userRole')
         router.push('/login')
       } else if (command === 'profile') {
         alert('个人信息功能开发中...')
