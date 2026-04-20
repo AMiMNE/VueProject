@@ -586,7 +586,7 @@ onUnmounted(() => {
 }
 
 .shop-title {
-  font-size: 72px;
+  font-size: 64px;
   font-weight: bold;
   color: white;
   text-align: center;
@@ -598,6 +598,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 0px;
+  margin-right: 55%;
 }
 
 .title-char {
@@ -733,6 +734,7 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   padding: 40px;
+  
 }
 
 .characters-container {
@@ -963,6 +965,7 @@ onUnmounted(() => {
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 400px;
+  margin-top: -20%;
 }
 
 .login-title {
@@ -1064,5 +1067,105 @@ onUnmounted(() => {
 
 .toggle-btn:hover {
   color: #5a6fd6;
+}
+
+@media (max-width: 1024px) {
+  .shop-title {
+    font-size: 56px;
+    padding: 30px 0 15px;
+  }
+  
+  .characters-container {
+    width: 450px;
+    height: 350px;
+  }
+  
+  .purple-character {
+    width: 150px;
+    height: 350px;
+    left: 60px;
+  }
+  
+  .purple-character.password-visible {
+    height: 350px;
+  }
+  
+  .purple-character.hiding-password {
+    height: 380px;
+  }
+  
+  .black-character {
+    width: 100px;
+    height: 270px;
+    left: 200px;
+  }
+  
+  .orange-character {
+    width: 200px;
+    height: 180px;
+  }
+  
+  .yellow-character {
+    width: 120px;
+    height: 200px;
+    left: 270px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shop-title {
+    font-size: 42px;
+    padding: 20px 0 10px;
+  }
+  
+  .main-content {
+    flex-direction: column;
+  }
+  
+  .left-section {
+    display: none;
+  }
+  
+  .right-section {
+    padding: 20px;
+  }
+  
+  .login-container {
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
+  }
+  
+  .login-title {
+    font-size: 20px;
+    margin-bottom: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop-title {
+    font-size: 32px;
+    padding: 15px 0 8px;
+  }
+  
+  .login-container {
+    width: 95%;
+    padding: 25px 20px;
+    border-radius: 15px;
+  }
+  
+  .login-title {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .mode-toggle {
+    margin-top: 15px;
+    padding-top: 15px;
+  }
+  
+  :deep(.el-input__wrapper) {
+    padding: 2px 12px;
+  }
 }
 </style>

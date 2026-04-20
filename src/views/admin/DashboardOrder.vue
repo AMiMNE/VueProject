@@ -19,9 +19,10 @@
         <label>搜索：</label>
         <el-input
           v-model="orderSearch"
-          placeholder="请输入订单号"
+          placeholder="请输入订单号或客户名"
           clearable
           @clear="handleOrderSearchClear"
+          style="width: 220px;"
         >
           <template #prefix>
             <el-icon><Search /></el-icon>
@@ -55,6 +56,7 @@
           placeholder="选择日期"
           clearable
           @change="handleOrderDateChange"
+          style="width: 150px;"
         />
       </div>
       
@@ -74,9 +76,9 @@
       </div>
 
       <!-- 重置按钮 -->
-      <div class="filter-item">
-        <el-button type="primary" @click="resetFilters">
-          重置筛选
+      <div class="filter-item reset-btn">
+        <el-button type="primary" circle @click="resetFilters">
+          <el-icon><Refresh /></el-icon>
         </el-button>
       </div>
     </div>
@@ -151,16 +153,18 @@
           <!-- 操作列 -->
           <el-table-column label="操作">
             <template #default="scope">
-              <el-button size="small" @click="showOrderDetail(scope.row)">查看</el-button>
-              <!-- 仅待发货订单显示发货按钮 -->
-              <el-button
-                v-if="scope.row.status === '待发货'"
-                size="small"
-                type="primary"
-                @click="handleShip(scope.row)"
-              >
-                发货
-              </el-button>
+              <div class="action-buttons">
+                <el-button size="small" @click="showOrderDetail(scope.row)">查看</el-button>
+                <!-- 仅待发货订单显示发货按钮 -->
+                <el-button
+                  v-if="scope.row.status === '待发货'"
+                  size="small"
+                  type="primary"
+                  @click="handleShip(scope.row)"
+                >
+                  发货
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -289,7 +293,7 @@
  */
 import { ref, watch, computed } from 'vue'
 // 导入 Element Plus 图标
-import { Search } from '@element-plus/icons-vue'
+import { Search, Refresh } from '@element-plus/icons-vue'
 // 导入 Element Plus 消息提示
 import { ElMessage } from 'element-plus'
 // 导入订单状态更新工具函数
@@ -298,7 +302,7 @@ import { updateOrderStatus } from '@/data/orders.js'
 export default {
   name: 'DashboardOrder',
   // 注册组件
-  components: { Search },
+  components: { Search, Refresh },
   // 组件属性：接收订单列表
   props: {
     orders: { type: Array, default: () => [] }
@@ -729,9 +733,10 @@ export default {
 
 .filter-bar {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 20px;
-  padding: 10px;
+  padding: 15px;
   background: #ffffff;
   border-radius: 8px;
   align-items: center;
@@ -740,16 +745,21 @@ export default {
 .filter-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex: 1;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.filter-item.reset-btn {
+  min-width: auto;
+  flex-shrink: 0;
 }
 
 .filter-item label {
   font-size: 14px;
   color: #606266;
-  font-weight: 500;
+  font-weight: 20px;
   white-space: nowrap;
-  min-width: 60px;
+  min-width: 50px;
 }
 
 .sort-bar {
@@ -869,5 +879,12 @@ export default {
   margin-top: 20px;
   color: #909399;
   font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 </style>

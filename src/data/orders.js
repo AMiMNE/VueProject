@@ -1,7 +1,7 @@
 // 订单数据及其操作函数
 const ORDERS_KEY = 'systemOrders'
 const ORDERS_VERSION_KEY = 'systemOrdersVersion'
-const CURRENT_VERSION = 3
+const CURRENT_VERSION = 4
 
 // 获取不同日期的辅助函数
 const getDaysAgo = (days) => {
@@ -39,7 +39,183 @@ const userMapping = {
   'user003': 'U015'
 }
 
-const defaultOrders = []
+const defaultOrders = [
+  {
+    id: 'ORDMO59DDE5PD0H',
+    username: 'cheems',
+    customerId: 'U011',
+    customer: 'cheems',
+    items: [
+      { productId: 'P001', name: '苹果', price: 5.00, discount: 1.0, quantity: 3, unit: '斤', subtotal: '15.00' },
+      { productId: 'P002', name: '香蕉', price: 3.50, discount: 0.9, quantity: 2, unit: '斤', subtotal: '6.30' }
+    ],
+    totalAmount: '21.30',
+    amount: 21.30,
+    itemCount: 5,
+    status: '待发货',
+    date: formatDate(),
+    createTime: new Date().toISOString(),
+    urgentCount: 0,
+    lastUrgentTime: null
+  },
+  {
+    id: 'ORD20260418001',
+    username: 'zhangsan',
+    customerId: 'U003',
+    customer: 'zhangsan',
+    items: [
+      { productId: 'P003', name: '牛奶', price: 8.00, discount: 1.0, quantity: 5, unit: '盒', subtotal: '40.00' }
+    ],
+    totalAmount: '40.00',
+    amount: 40.00,
+    itemCount: 5,
+    status: '待发货',
+    date: formatDate(),
+    createTime: new Date().toISOString(),
+    urgentCount: 2,
+    lastUrgentTime: new Date().toISOString()
+  },
+  {
+    id: 'ORD20260417001',
+    username: 'lisi',
+    customerId: 'U004',
+    customer: 'lisi',
+    items: [
+      { productId: 'P004', name: '面包', price: 6.00, discount: 0.8, quantity: 4, unit: '个', subtotal: '19.20' },
+      { productId: 'P005', name: '鸡蛋', price: 12.00, discount: 1.0, quantity: 1, unit: '盒', subtotal: '12.00' }
+    ],
+    totalAmount: '31.20',
+    amount: 31.20,
+    itemCount: 5,
+    status: '已发货',
+    date: formatDate(getDaysAgo(1)),
+    createTime: getDaysAgo(1).toISOString(),
+    urgentCount: 0,
+    lastUrgentTime: null
+  },
+  {
+    id: 'ORD20260416001',
+    username: 'wangwu',
+    customerId: 'U005',
+    customer: 'wangwu',
+    items: [
+      { productId: 'P006', name: '大米', price: 45.00, discount: 0.95, quantity: 2, unit: '袋', subtotal: '85.50' }
+    ],
+    totalAmount: '85.50',
+    amount: 85.50,
+    itemCount: 2,
+    status: '已完成',
+    date: formatDate(getDaysAgo(2)),
+    createTime: getDaysAgo(2).toISOString(),
+    urgentCount: 1,
+    lastUrgentTime: getDaysAgo(2).toISOString()
+  },
+  {
+    id: 'ORD20260415001',
+    username: 'zhaoliu',
+    customerId: 'U006',
+    customer: 'zhaoliu',
+    items: [
+      { productId: 'P007', name: '食用油', price: 35.00, discount: 1.0, quantity: 1, unit: '桶', subtotal: '35.00' },
+      { productId: 'P008', name: '酱油', price: 8.50, discount: 1.0, quantity: 2, unit: '瓶', subtotal: '17.00' }
+    ],
+    totalAmount: '52.00',
+    amount: 52.00,
+    itemCount: 3,
+    status: '已取消',
+    date: formatDate(getDaysAgo(3)),
+    createTime: getDaysAgo(3).toISOString(),
+    urgentCount: 0,
+    lastUrgentTime: null
+  },
+  {
+    id: 'ORD20260410001',
+    username: 'zhouba',
+    customerId: 'U008',
+    customer: 'zhouba',
+    items: [
+      { productId: 'P009', name: '茶叶', price: 128.00, discount: 0.9, quantity: 1, unit: '盒', subtotal: '115.20' }
+    ],
+    totalAmount: '115.20',
+    amount: 115.20,
+    itemCount: 1,
+    status: '已完成',
+    date: formatDate(getDaysAgo(8)),
+    createTime: getDaysAgo(8).toISOString(),
+    urgentCount: 0,
+    lastUrgentTime: null
+  },
+  {
+    id: 'ORD20260405001',
+    username: 'wujiu',
+    customerId: 'U009',
+    customer: 'wujiu',
+    items: [
+      { productId: 'P010', name: '咖啡', price: 58.00, discount: 1.0, quantity: 2, unit: '袋', subtotal: '116.00' },
+      { productId: 'P011', name: '糖', price: 12.00, discount: 1.0, quantity: 3, unit: '袋', subtotal: '36.00' }
+    ],
+    totalAmount: '152.00',
+    amount: 152.00,
+    itemCount: 5,
+    status: '已完成',
+    date: formatDate(getDaysAgo(13)),
+    createTime: getDaysAgo(13).toISOString(),
+    urgentCount: 3,
+    lastUrgentTime: getDaysAgo(13).toISOString()
+  },
+  {
+    id: 'ORD20260320001',
+    username: 'shiyi',
+    customerId: 'U010',
+    customer: 'shiyi',
+    items: [
+      { productId: 'P012', name: '矿泉水', price: 2.00, discount: 1.0, quantity: 24, unit: '瓶', subtotal: '48.00' }
+    ],
+    totalAmount: '48.00',
+    amount: 48.00,
+    itemCount: 24,
+    status: '已完成',
+    date: formatDate(getDaysAgo(29)),
+    createTime: getDaysAgo(29).toISOString(),
+    urgentCount: 0,
+    lastUrgentTime: null
+  },
+  {
+    id: 'ORD20260215001',
+    username: 'zhengshi',
+    customerId: 'U012',
+    customer: 'zhengshi',
+    items: [
+      { productId: 'P013', name: '零食大礼包', price: 88.00, discount: 0.85, quantity: 1, unit: '份', subtotal: '74.80' },
+      { productId: 'P014', name: '饮料', price: 5.00, discount: 1.0, quantity: 6, unit: '瓶', subtotal: '30.00' }
+    ],
+    totalAmount: '104.80',
+    amount: 104.80,
+    itemCount: 7,
+    status: '已完成',
+    date: formatDate(getDaysAgo(62)),
+    createTime: getDaysAgo(62).toISOString(),
+    urgentCount: 1,
+    lastUrgentTime: getDaysAgo(62).toISOString()
+  },
+  {
+    id: 'ORD20260110001',
+    username: 'user001',
+    customerId: 'U013',
+    customer: 'user001',
+    items: [
+      { productId: 'P015', name: '坚果礼盒', price: 158.00, discount: 0.9, quantity: 1, unit: '盒', subtotal: '142.20' }
+    ],
+    totalAmount: '142.20',
+    amount: 142.20,
+    itemCount: 1,
+    status: '已完成',
+    date: formatDate(getDaysAgo(98)),
+    createTime: getDaysAgo(98).toISOString(),
+    urgentCount: 0,
+    lastUrgentTime: null
+  }
+]
 
 const generateOrderId = () => {
   const timestamp = Date.now().toString(36)

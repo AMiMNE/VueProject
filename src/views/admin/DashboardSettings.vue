@@ -80,10 +80,10 @@ export default {
   setup() {
     const showPassword = ref(false)
     
-    // 获取当前管理员信息（从 localStorage 或默认第一个管理员）
-    const currentUser = localStorage.getItem('currentUser')
+    // 获取当前管理员信息（从 sessionStorage）
+    const currentUser = sessionStorage.getItem('username')
     const users = getUsers()
-    const adminUser = users.find(u => u.username === currentUser) || users.find(u => u.role === 'admin') || {}
+    const adminUser = users.find(u => u.username === currentUser) || {}
     
     const adminInfo = reactive({
       id: adminUser.id || '-',
