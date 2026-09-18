@@ -487,7 +487,7 @@ export default {
 
 /* 管理员自己的消息（右对齐） */
 .chat-message.message-self {
-  flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 /* 消息气泡 */

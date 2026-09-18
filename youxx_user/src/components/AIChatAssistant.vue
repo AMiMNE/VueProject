@@ -431,7 +431,7 @@ defineExpose({
 }
 
 .message-item.user {
-  flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 .message-item .avatar {
@@ -449,7 +449,6 @@ defineExpose({
 
 .message-item.user .message-content {
   display: flex;
-  justify-content: flex-end;
 }
 
 .message-text {

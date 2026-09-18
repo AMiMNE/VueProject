@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AgentChatResultVO {
+
     /** "text" */
     private String type;
     /** 模型最终回复文本 */

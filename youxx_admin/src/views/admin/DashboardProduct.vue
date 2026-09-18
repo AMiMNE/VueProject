@@ -532,14 +532,36 @@ export default {
     }
 
     const filteredProducts = computed(() => {
-      return products.value
+      let result = products.value
+
+      // 按搜索关键词过滤（匹配商品名称或ID）
+      if (productSearch.value) {
+        const keyword = productSearch.value.toLowerCase()
+        result = result.filter(p =>
+          p.name.toLowerCase().includes(keyword) ||
+          String(p.id).toLowerCase().includes(keyword)
+        )
+      }
+
+      // 按分类过滤
+      if (productCategory.value) {
+        result = result.filter(p => p.category === productCategory.value)
+      }
+
+      // 按状态过滤
+      if (productStatus.value) {
+        result = result.filter(p => p.status === productStatus.value)
+      }
+
+      return result
     })
 
     const toggleProductStatus = async (product, newStatus) => {
       try {
         await updateProductStatusApi(product.id, newStatus.toUpperCase())
         product.status = newStatus
-        triggerRef(products)
+        // 重建数组引用以触发 shallowRef 的响应式更新
+        products.value = [...products.value]
         ElMessage.success(newStatus === 'onshelf' ? '已上架' : '已下架')
       } catch (error) {
         ElMessage.error('状态更新失败')

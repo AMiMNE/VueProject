@@ -36,3 +36,14 @@ TODOS/
 
 ### 本地敏感配置（含密钥，不入库） ###
 youxx_backend/src/main/resources/application-dev.yaml
+
+### Node / 前端依赖与构建产物 ###
+node_modules/
+youxx_front/
+dist/
+
+### 大文件与本地文档 ###
+*.docx
+
+### Trae / agent 本地文件 ###
+.agents/
