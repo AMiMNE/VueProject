@@ -24,6 +24,21 @@ spring:
 server:
   port: 8081
 
+# Swagger / OpenAPI 3 接口文档
+# 访问地址: http://localhost:8081/swagger-ui.html
+# JSON 规范: http://localhost:8081/v3/api-docs
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha        # 分组按字母排序
+    operations-sorter: alpha  # 接口按字母排序
+    display-request-duration: true
+    try-it-out-enabled: true  # 打开在线调试
+  default-produces-media-type: application/json
+
 youxx:
   jwt:
     secret-key: youxx-jwt-secret-key-2026-secure-token

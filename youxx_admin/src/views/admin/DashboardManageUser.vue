@@ -1,173 +1,3 @@
-<template>
-  <div class="page-content">
-    <div class="page-header">
-      <h2>用户管理</h2>
-    </div>
-    
-    <div class="stats-cards">
-      <div class="stat-card user-card" @click="filterByRole('')">
-        <div class="stat-card-content">
-          <div class="stat-icon-wrapper">
-            <div class="stat-icon">
-              <el-icon><User /></el-icon>
-            </div>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ totalUsers }}</div>
-            <div class="stat-label">用户总数</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="stat-card admin-card" @click="filterByRole('管理员')">
-        <div class="stat-card-content">
-          <div class="stat-icon-wrapper">
-            <div class="stat-icon">
-              <el-icon><UserFilled /></el-icon>
-            </div>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ totalAdmins }}</div>
-            <div class="stat-label">管理员数量</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-bar">
-      <div class="filter-item">
-        <label>搜索：</label>
-        <el-input
-          v-model="searchKeyword"
-          placeholder="请输入 ID 或用户名"
-          clearable
-          @clear="handleSearchClear"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-      </div>
-      <div class="filter-item">
-        <label>身份：</label>
-        <el-select
-          v-model="roleFilter"
-          placeholder="请选择身份"
-          clearable
-          @change="handleRoleChange"
-        >
-          <el-option label="全部" value="" />
-          <el-option label="管理员" value="管理员" />
-          <el-option label="用户" value="用户" />
-        </el-select>
-      </div>
-      <el-button type="primary" @click="showAddDialog">
-        <el-icon><Plus /></el-icon>
-        添加用户
-      </el-button>
-    </div>
-    <div class="table-wrapper">
-      <el-table :data="paginatedUsers" style="width: 100%" :key="tableKey">
-        <el-table-column prop="id" label="ID"  />
-        <el-table-column prop="username" label="用户名"  />
-        <el-table-column prop="phone" label="电话号码"  />
-        <el-table-column prop="role" label="角色" >
-          <template #default="scope">
-            <el-tag :type="scope.row.role === '管理员' ? 'danger' : 'primary'">
-              {{ scope.row.role }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" >
-          <template #default="scope">
-            <el-tag
-              v-if="canEditStatus(scope.row)"
-              :type="scope.row.status === '正常' ? 'success' : 'danger'"
-              style="cursor: pointer"
-              @click="handleStatusChange(scope.row)"
-            >
-              {{ scope.row.status }}
-            </el-tag>
-            <el-tag v-else :type="scope.row.status === '正常' ? 'success' : 'danger'">
-              {{ scope.row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" >
-          <template #default="scope">
-            <el-button size="small" @click="showEditDialog(scope.row)">编辑</el-button>
-            <el-button
-              v-if="canDeleteUser(scope.row)"
-              size="small"
-              type="danger"
-              @click="handleDelete(scope.row)"
-            >
-              删除
-            </el-button>
-            <el-button
-              v-else
-              size="small"
-              type="info"
-              disabled
-              class="disabled-delete-btn"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="[5, 10, 20, 50]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </div>
-
-    <el-dialog
-      v-model="dialogVisible"
-      :title="isEditMode ? '编辑用户' : '添加用户'"
-      width="500px"
-    >
-      <el-form :model="userForm" label-width="80px">
-        <el-form-item label="用户名">
-          <el-input v-model="userForm.username" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item v-if="!isEditMode" label="密码">
-          <el-input v-model="userForm.password" placeholder="请输入密码" type="password" show-password />
-        </el-form-item>
-        <el-form-item label="电话号码">
-          <el-input v-model="userForm.phone" placeholder="请输入电话号码" />
-        </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="userForm.email" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="角色">
-          <el-select v-model="userForm.role" placeholder="请选择角色" :disabled="isEditMode">
-            <el-option label="管理员" value="管理员" />
-            <el-option label="用户" value="用户" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="userForm.status" placeholder="请选择状态" :disabled="userForm.role === '管理员'">
-            <el-option label="正常" value="正常" />
-            <el-option label="禁用" value="禁用" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSave">确定</el-button>
-      </template>
-    </el-dialog>
-  </div>
-</template>
-
 <script>
 import { ref, watch, computed, onMounted } from 'vue'
 import { Search, Plus, User, UserFilled } from '@element-plus/icons-vue'
@@ -210,11 +40,11 @@ export default {
     })
 
     const totalUsers = computed(() => {
-      return users.value.filter(u => u.role === 'USER').length
+      return users.value.filter(u => u.role === '用户').length
     })
 
     const totalAdmins = computed(() => {
-      return users.value.filter(u => u.role === 'ADMIN').length
+      return users.value.filter(u => u.role === '管理员').length
     })
 
     const loadUsers = async () => {
@@ -411,6 +241,177 @@ export default {
   }
 }
 </script>
+<template>
+  <div class="page-content">
+    <div class="page-header">
+      <h2>用户管理</h2>
+    </div>
+    
+    <div class="stats-cards">
+      <div class="stat-card user-card" @click="filterByRole('')">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><User /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ totalUsers }}</div>
+            <div class="stat-label">用户总数</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stat-card admin-card" @click="filterByRole('管理员')">
+        <div class="stat-card-content">
+          <div class="stat-icon-wrapper">
+            <div class="stat-icon">
+              <el-icon><UserFilled /></el-icon>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ totalAdmins }}</div>
+            <div class="stat-label">管理员数量</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-item">
+        <label>搜索：</label>
+        <el-input
+          v-model="searchKeyword"
+          placeholder="请输入 ID 或用户名"
+          clearable
+          @clear="handleSearchClear"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+      </div>
+      <div class="filter-item">
+        <label>身份：</label>
+        <el-select
+          v-model="roleFilter"
+          placeholder="请选择身份"
+          clearable
+          @change="handleRoleChange"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="管理员" value="管理员" />
+          <el-option label="用户" value="用户" />
+        </el-select>
+      </div>
+      <el-button type="primary" @click="showAddDialog">
+        <el-icon><Plus /></el-icon>
+        添加用户
+      </el-button>
+    </div>
+    <div class="table-wrapper">
+      <el-table :data="paginatedUsers" style="width: 100%" :key="tableKey">
+        <el-table-column prop="id" label="ID"  />
+        <el-table-column prop="username" label="用户名"  />
+        <el-table-column prop="phone" label="电话号码"  />
+        <el-table-column prop="role" label="角色" >
+          <template #default="scope">
+            <el-tag :type="scope.row.role === '管理员' ? 'danger' : 'primary'">
+              {{ scope.row.role }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" >
+          <template #default="scope">
+            <el-tag
+              v-if="canEditStatus(scope.row)"
+              :type="scope.row.status === '正常' ? 'success' : 'danger'"
+              style="cursor: pointer"
+              @click="handleStatusChange(scope.row)"
+            >
+              {{ scope.row.status }}
+            </el-tag>
+            <el-tag v-else :type="scope.row.status === '正常' ? 'success' : 'danger'">
+              {{ scope.row.status }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" >
+          <template #default="scope">
+            <el-button size="small" @click="showEditDialog(scope.row)">编辑</el-button>
+            <el-button
+              v-if="canDeleteUser(scope.row)"
+              size="small"
+              type="danger"
+              @click="handleDelete(scope.row)"
+            >
+              删除
+            </el-button>
+            <el-button
+              v-else
+              size="small"
+              type="info"
+              disabled
+              class="disabled-delete-btn"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[5, 10, 20, 50]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </div>
+
+    <el-dialog
+      v-model="dialogVisible"
+      :title="isEditMode ? '编辑用户' : '添加用户'"
+      width="500px"
+    >
+      <el-form :model="userForm" label-width="80px">
+        <el-form-item label="用户名">
+          <el-input v-model="userForm.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item v-if="!isEditMode" label="密码">
+          <el-input v-model="userForm.password" placeholder="请输入密码" type="password" show-password />
+        </el-form-item>
+        <el-form-item label="电话号码">
+          <el-input v-model="userForm.phone" placeholder="请输入电话号码" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="userForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="userForm.role" placeholder="请选择角色" :disabled="isEditMode">
+            <el-option label="管理员" value="管理员" />
+            <el-option label="用户" value="用户" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="userForm.status" placeholder="请选择状态" :disabled="userForm.role === '管理员'">
+            <el-option label="正常" value="正常" />
+            <el-option label="禁用" value="禁用" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSave">确定</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+
 
 <style scoped>
 .page-content h2 {

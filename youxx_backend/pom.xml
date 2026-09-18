@@ -110,10 +110,11 @@
             <artifactId>langchain4j-open-ai</artifactId>
             <version>1.13.0</version>
         </dependency>
+        <!-- Swagger / OpenAPI 3 文档：Spring Boot 4 必须使用 springdoc 3.x -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.7.0</version>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.1.1</version>
         </dependency>
     </dependencies>
 
